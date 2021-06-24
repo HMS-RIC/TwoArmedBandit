@@ -1,0 +1,6 @@
+# Changes and Possible Issues with State-Machine version
+
+pokeHistory.laser -> logs side laser state (as before)
+	(can we change this to 'sideLaserState' ?)
+pokeHistory.centerLaserState -> logs center laser state (new)
+

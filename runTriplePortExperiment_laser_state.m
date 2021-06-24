@@ -365,10 +365,10 @@ function noseIn(portID)
     %update the lastPokeTime
     lastPokeTime = clock;
 
-    % determine value for isTrial based TrialState
+    % determine value for isTrial based on current TrialState
     global TrialState
     pokeHistory(pokeCount).isTRIAL = 0; % default to 'incorrect poke'
-    if strcmp(TrialState, 'ISI') & (portID == centerPort.portID)
+    if strcmp(TrialState, 'START') & (portID == centerPort.portID)
         pokeHistory(pokeCount).isTRIAL = 1; % this was a trial initiation
     elseif strcmp(TrialState, 'REWARD_WINDOW') && ((portID == rightPort.portID) || (portID == leftPort.portID))
         pokeHistory(pokeCount).isTRIAL = 2; % this was a decision poke
@@ -378,18 +378,10 @@ function noseIn(portID)
         pokeHistory(pokeCount).leftPortStats.ACTIVATE = activateLeft;
         pokeHistory(pokeCount).rightPortStats.ACTIVATE = activateRight;
         pokeHistory(pokeCount).laser = laser_state;
+        pokeHistory(pokeCount).laser = center_laser_state;
     end
 
-    % initiate appropriate state transition
-    if portID == rightPort.portID
-        stateTransitionEvent('rightPoke');
-    elseif portID == leftPort.portID
-        stateTransitionEvent('leftPoke');
-    elseif portID == centerPort.portID
-        stateTransitionEvent('centerPoke');
-    end
-
-    % Update pokeHistory
+    % Update pokeHistory and initiate appropriate state transition
     pokeHistory(pokeCount).timeStamp = now;
     if portID == rightPort.portID
         pokeHistory(pokeCount).portPoked = 'rightPort';
@@ -402,7 +394,7 @@ function noseIn(portID)
         stateTransitionEvent('centerPoke');
     end
     %in order to run update stats, we need a value for pokeHistory.REWARD
-    pokeHistory(pokeCount).REWARD = 0;
+    pokeHistory(pokeCount).REWARD = 0; % this might be overwritten if reward happens
 
     %update stats and refresh figures
     stats = updatestats(stats,pokeHistory(pokeCount),pokeCount,sync_frame);
