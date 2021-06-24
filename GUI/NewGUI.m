@@ -463,7 +463,7 @@ if ~info.save
     end
 end
 info.running = false;
-reset_Callback(hObject, eventdata, handles)
+% reset_Callback(hObject, eventdata, handles)
 % set(handles.stopExperiment, 'enable', 'off');
 % set(handles.save, 'enable', 'off');
 
