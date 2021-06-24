@@ -291,21 +291,21 @@ end
 %% Laser stim functions
 
 function activateSideLaserStimWithProb(sideSitmProb)
-    global rightPort leftPort laser_state
+    global rightPort leftPort side_laser_state
     if rand <= sideSitmProb
         rightPort.activateLaser();
         leftPort.activateLaser();
-        laser_state = 1;
+        side_laser_state = 1;
     else
         deactivateSideLaserStim();
     end
 end
 
 function deactivateSideLaserStim()
-    global rightPort leftPort laser_state
+    global rightPort leftPort side_laser_state
     rightPort.deactivateLaser();
     leftPort.deactivateLaser();
-    laser_state = 0;
+    side_laser_state = 0;
 end
 
 function activateCenterLaserStimWithProb(centerStimProb)
@@ -388,7 +388,7 @@ function updatePokeStats(pokeSide, pokeType)
     global p
     global pokeHistory pokeCount lastPokeTime
     global rightPort leftPort centerPort
-    global activateLeft activateRight laser_state center_laser_state
+    global activateLeft activateRight side_laser_state center_laser_state
     global stats
     global iti
     global h
@@ -414,7 +414,7 @@ function updatePokeStats(pokeSide, pokeType)
         pokeHistory(pokeCount).rightPortStats.prob = p.rightRewardProb;
         pokeHistory(pokeCount).leftPortStats.ACTIVATE = activateLeft;
         pokeHistory(pokeCount).rightPortStats.ACTIVATE = activateRight;
-        pokeHistory(pokeCount).laser = laser_state;
+        pokeHistory(pokeCount).laser = side_laser_state;
         pokeHistory(pokeCount).laser = center_laser_state;
     end
 
