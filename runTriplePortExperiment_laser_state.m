@@ -190,13 +190,14 @@ end
 
 
 
-%% stateTransitionTo: transitions between states of the state machine
+%% stateTransitionEvent: transitions between states of the state machine
 function newTrialState = stateTransitionEvent(eventName)
     global TrialState
 
     newTrialState = '';
 
-    % act based on current state
+    % 1) Respond to events based on the current state
+    %
     switch TrialState
         case 'ITI'
             % wait for itiTimeout event before transitioning to START
@@ -204,44 +205,53 @@ function newTrialState = stateTransitionEvent(eventName)
             % if in training mode (p.centerPokeTrigger == false),
             %   transition stright to REWARD_WINDOW
             switch eventName
-                % case {'centerPoke', 'leftPoke', 'rightPoke'}
-                %     lastPokeTime = clock;
+                case {'centerPoke', 'leftPoke', 'rightPoke'}
+                     logIncorrectPoke(eventName);
                 case 'itiTimeout'
-                    newTrialState = 'START';
-                    if (~p.centerPokeTrigger)
+                    if (p.centerPokeTrigger)
+                        newTrialState = 'START';
+                    else
                         newTrialState = 'REWARD_WINDOW';
                     end
             end
 
         case 'START'
             % wait for central poke to transition to REWARD_WINDOW
-            % side pokes result in transition to ISI state
+            % side pokes result in transition to ITI state
             switch eventName
                 case 'centerPoke'
                     newTrialState = 'REWARD_WINDOW';
+                    logInitiationPoke(eventName);
                 case {'leftPoke', 'rightPoke'}
-                    newTrialState = 'ISI';
-                    centerPort.ledOff();
+                    logIncorrectPoke(eventName);
+                    newTrialState = 'ITI';
             end
 
         case 'REWARD_WINDOW'
             switch eventName
                 case 'rewardTimeout'
-                    newTrialState = 'ISI';
-
+                    newTrialState = 'ITI';
                 case 'centerPoke'
-                    centerPort.ledOff();
-                    deactivateCenterLaserStim();
-                    newTrialState = 'REWARD_WINDOW';
+                    logIncorrectPoke(eventName);
+                    newTrialState = 'ITI';
                 case {'leftPoke', 'rightPoke'}
-                    newTrialState = 'ISI';
+                    logDecisionPoke(eventName);
+                    newTrialState = 'ITI';
             end
 
         otherwise
             warning('Unexpected state.')
     end
 
-    % Now initialize new trial state (if needed)
+    % 2) State Transition
+    if ~strcmp(newTrialState,'')
+        TrialState = newTrialState;
+    end
+
+    % 3) Initialize new trial state (if needed)
+    % Here is where we perform all initialization functions for a new
+    % state that only need to be performed once, at the start of the
+    % state (e.g., turning LEDs on/off).
     switch newTrialState
         case ''
             % didn't switch states; do nothing
@@ -348,10 +358,33 @@ function syncIn(portID)
 end
 
 function noseIn(portID)
-    global sync_counter sync_frame
-    sync_frame = sync_counter;
-
+    global rightPort leftPort centerPort
     disp('noseIn')
+
+    % Initiate appropriate state transition
+    pokeCount = pokeCount+1; %increment pokeCount
+    if portID == rightPort.portID
+        stateTransitionEvent('rightPoke');
+    elseif portID == leftPort.portID
+        stateTransitionEvent('leftPoke');
+    elseif portID == centerPort.portID
+        stateTransitionEvent('centerPoke');
+    end
+end
+
+function logIncorrectPoke(pokeSide)
+    updatePokeStats(pokeSide, 0);
+end
+
+function logInitiationPoke(pokeSide)
+    updatePokeStats(pokeSide, 1);
+end
+
+function logDecisionPoke(pokeSide)
+    updatePokeStats(pokeSide, 2);
+end
+
+function updatePokeStats(pokeSide, pokeType)
     global p
     global pokeHistory pokeCount lastPokeTime
     global rightPort leftPort centerPort
@@ -360,18 +393,22 @@ function noseIn(portID)
     global iti
     global h
 
+    global sync_counter sync_frame
+    sync_frame = sync_counter;
+
     pokeCount = pokeCount+1; %increment pokeCount
+    pokeHistory(pokeCount).timeStamp = now;
     timeSinceLastPoke = etime(clock, lastPokeTime);
     %update the lastPokeTime
     lastPokeTime = clock;
 
+    pokeHistory(pokeCount).isTRIAL = pokeType;
+    % isTRIAL == 0 means that the poke is 'incorrect' and not a trial
+    % isTRIAL == 1 means that centerPort has correctly initiated trial
+    % isTRIAL == 2 means that the poke is a decision poke
+
     % determine value for isTrial based on current TrialState
-    global TrialState
-    pokeHistory(pokeCount).isTRIAL = 0; % default to 'incorrect poke'
-    if strcmp(TrialState, 'START') & (portID == centerPort.portID)
-        pokeHistory(pokeCount).isTRIAL = 1; % this was a trial initiation
-    elseif strcmp(TrialState, 'REWARD_WINDOW') && ((portID == rightPort.portID) || (portID == leftPort.portID))
-        pokeHistory(pokeCount).isTRIAL = 2; % this was a decision poke
+    if (pokeType == 2)
         pokeHistory(pokeCount).trialTime = timeSinceLastPoke;
         pokeHistory(pokeCount).leftPortStats.prob = p.leftRewardProb;
         pokeHistory(pokeCount).rightPortStats.prob = p.rightRewardProb;
@@ -383,16 +420,17 @@ function noseIn(portID)
 
     % Update pokeHistory and initiate appropriate state transition
     pokeHistory(pokeCount).timeStamp = now;
-    if portID == rightPort.portID
-        pokeHistory(pokeCount).portPoked = 'rightPort';
-        stateTransitionEvent('rightPoke');
-    elseif portID == leftPort.portID
-        pokeHistory(pokeCount).portPoked = 'leftPort';
-        stateTransitionEvent('leftPoke');
-    elseif portID == centerPort.portID
-        pokeHistory(pokeCount).portPoked = 'centerPort';
-        stateTransitionEvent('centerPoke');
+    switch pokeSide
+        case 'rightPoke'
+            pokeHistory(pokeCount).portPoked = 'rightPort';
+        case 'leftPoke'
+            pokeHistory(pokeCount).portPoked = 'leftPort';
+        case 'centerPoke'
+            pokeHistory(pokeCount).portPoked = 'centerPort';
+        otherwise
+            warning('Unexpected pokeSide')
     end
+
     %in order to run update stats, we need a value for pokeHistory.REWARD
     pokeHistory(pokeCount).REWARD = 0; % this might be overwritten if reward happens
 

@@ -4,3 +4,4 @@ pokeHistory.laser -> logs side laser state (as before)
 	(can we change this to 'sideLaserState' ?)
 pokeHistory.centerLaserState -> logs center laser state (new)
 
+After trial is initiated, does centerPoke count as "decision" "incorrect" poke? Transition to ITI??
