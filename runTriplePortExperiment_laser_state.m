@@ -1,5 +1,8 @@
 function runTriplePortExperiment_laser_state(varargin)
 
+    %% State-Machine version of the triple-port experiment
+    % Ofer Mazor, 2021-09-22
+
     global arduinoConnection arduinoPort
     global arduinoMessageString
     global p % parameter structure
@@ -10,22 +13,21 @@ function runTriplePortExperiment_laser_state(varargin)
 
     %% Setup
 
-    % cleanup routine to be executed even if this function is terminated early
+    % Cleanup routine to be executed upon termination (even if this function
+    % is terminated early)
     finishup = onCleanup(@triplePortCleanup);
 
-    % seed random number generator (to prevent repeating the same values on
+    % Seed random number generator (to prevent repeating the same values on
     % different experiments)
     rng('shuffle');
 
-    %gets the mouse's name
+    % Set up logging
     mouseName = info.mouseName;
-    %creates the log file name
-    mouseLog = strcat(mouseName,'_log');
-    %sets up the logging for mouseLog
+    mouseLog = strcat(mouseName,'_log'); % log file name
     setupLogging(mouseLog);
 
 
-    %% log all paramters and inital values
+    % Log all paramters and inital values
     fn = fieldnames(p);
     for i=1:length(fn)
         fName = fn{i};
@@ -53,7 +55,6 @@ function runTriplePortExperiment_laser_state(varargin)
         pause(0.5);
     end
     fprintf('\n')
-
 
 
     %% setup ports/arduino
@@ -100,10 +101,10 @@ function runTriplePortExperiment_laser_state(varargin)
     centerPort.setLaserPulseDuration(500) %ms
     centerPort.setLaserPulsePeriod(500) %ms
 
-    %create NosePort specifically for syncing with imaging
-    %this object simply receives 5 volt pulses from the inscopix box
-    %on pin 11. IE it treats like a IR beam and when it is detected (when
-    %a 5 volt pulse comes in) it records like a nose poke.
+    % create NosePort specifically for syncing with imaging
+    % this object simply receives 5 volt pulses from the inscopix box
+    % on pin 11. IE it treats like a IR beam and when it is detected (when
+    % a 5 volt pulse comes in) it records like a nose poke.
     syncPort = NosePort(11,13);
     syncPort.deactivate()
     syncPort.noseInFunc = @syncIn;
@@ -112,31 +113,7 @@ function runTriplePortExperiment_laser_state(varargin)
     global sync_counter
     sync_counter = 0;
 
-    if p.centerPokeTrigger
-        rightPort.deactivate();
-        leftPort.deactivate();
-    else
-        rightPort.activate();
-        leftPort.activate();
-    end
-
-
-    %% run trials
-    global numBlocks
-    numBlocks = struct;
-    numBlocks.left = 0;
-    numBlocks.right = 0;
-    if p.rightRewardProb >= p.leftRewardProb
-        numBlocks.right = 1;
-    else
-        numBlocks.left = 1;
-    end
-
-    global currBlockReward blockRange currBlockSize
-    currBlockReward = 0;
-    blockRange = [p.blockRangeMin:p.blockRangeMax];
-    currBlockSize = randi([min(blockRange),max(blockRange)]);
-    display(currBlockSize)
+    initializeRewardProbabilities();
 
     global pokeHistory pokeCount
     pokeCount = 0;
@@ -149,9 +126,9 @@ function runTriplePortExperiment_laser_state(varargin)
     %create stats structure for online analysis and visualization
     global stats
     % initialize the first entry of stats to be zeros
-    stats = initializestats;
+    stats = initializestats();
     cumstats = cumsumstats(stats);
-    %create figure for onilne visualization
+    %create figure for online visualization
     global h
     h = initializestatsfig(cumstats);
 
@@ -174,9 +151,9 @@ function runTriplePortExperiment_laser_state(varargin)
     global TrialState = 'ITI';
     lastPokeTime = 0; % force immediate transition from ITI to START
 
-    %% run the program.....
-    % runs as long as info.running has not been set to false via the Stop
-    % Experiment button
+    %% RUN THE PROGRAM:
+    % Runs as long as info.running has not been set to false via the "Stop
+    % Experiment" button
     while info.running
         pause(0.1)
         % actively probe whether or not enough time has elapsed to start a
@@ -185,7 +162,7 @@ function runTriplePortExperiment_laser_state(varargin)
             stateTransitionEvent('itiTimeout');
         end
     end
-    triplePortCleanup();
+    % triplePortCleanup(); % redundant??
 end
 
 
@@ -197,7 +174,6 @@ function newTrialState = stateTransitionEvent(eventName)
     newTrialState = '';
 
     % 1) Respond to events based on the current state
-    %
     switch TrialState
         case 'ITI'
             % wait for itiTimeout event before transitioning to START
@@ -243,13 +219,13 @@ function newTrialState = stateTransitionEvent(eventName)
             warning('Unexpected state.')
     end
 
-    % 2) State Transition
+    % 2) State Transition (if needed)
     if ~strcmp(newTrialState,'')
         TrialState = newTrialState;
     end
 
     % 3) Initialize new trial state (if needed)
-    % Here is where we perform all initialization functions for a new
+    % Here is where we perform all initialization actions for a new
     % state that only need to be performed once, at the start of the
     % state (e.g., turning LEDs on/off).
     switch newTrialState
@@ -257,7 +233,6 @@ function newTrialState = stateTransitionEvent(eventName)
             % didn't switch states; do nothing
 
         case 'ITI'
-            TrialState = 'ITI';
             centerPort.ledOff();
             leftPort.ledOff();
             rightPort.ledOff();
@@ -265,14 +240,12 @@ function newTrialState = stateTransitionEvent(eventName)
             deactivateSidePorts();
 
         case 'START'
-            TrialState = 'START';
             centerPort.ledOn();
             leftPort.ledOff();
             rightPort.ledOff();
             activateCenterLaserStimWithProb(p.centerLaserStimProb);
 
         case 'REWARD_WINDOW'
-            TrialState = 'REWARD_WINDOW';
             centerPort.ledOff();
             leftPort.ledOn();
             rightPort.ledOn();
@@ -498,6 +471,34 @@ function reupdateRewardProbabilities()
         end
         currBlockSize
     end
+end
+
+function initializeRewardProbabilities()
+    % to be called once at the start of a session
+
+    global p
+    global currBlockReward blockRange currBlockSize
+
+    global numBlocks
+    numBlocks = struct;
+    numBlocks.left = 0;
+    numBlocks.right = 0;
+    if p.rightRewardProb >= p.leftRewardProb
+        numBlocks.right = 1;
+    else
+        numBlocks.left = 1;
+    end
+
+    currBlockReward = 0;
+    blockRange = [p.blockRangeMin:p.blockRangeMax];
+    currBlockSize = randi([min(blockRange),max(blockRange)]);
+    display('Left Reward Prob:')
+    p.leftRewardProb
+    display('Right Reward Prob:')
+    p.rightRewardProb
+    display('Current Block Size:')
+    currBlockSize
+
 end
 
 
