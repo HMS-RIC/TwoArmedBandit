@@ -78,7 +78,7 @@ set(handles.rightCalibDuration,'enable','off');
 set(handles.getLeftCalibDuration,'enable','off');
 set(handles.getRightCalibDuration,'enable','off');
 set(handles.numIterations,'enable','off');
-
+fprintf('NewGUI_OpeningFcn\n')
 
 
 
@@ -364,7 +364,7 @@ function runExperiment_Callback(hObject, eventdata, handles)
 %LEDDuringRewardWindow is automatically set to 1
 global p
 p = struct;
-p.centerPokeTrigger = str2double(get(handles.centerPokeTrigger, 'String'));
+p.centerPokeTrigger = get(handles.centerPokeTrigger, 'Value');
 p.centerPokeRewardWindow = str2double(get(handles.centerPokeRewardWindow, 'String'));
 p.ledDuringRewardWindow = 1;
 p.leftRewardProb = str2double(get(handles.leftRewardProb, 'String'));
@@ -436,7 +436,7 @@ if ready
     set(handles.getRightCalibDuration,'enable','off');
     set(handles.statsTable,'enable','on');
     if p.ismarkov == 0
-        runTriplePortExperiment_laser
+        runTriplePortExperiment_laser_state
     elseif p.ismarkov ==1
         runTriplePortExperiment_markov
     else
