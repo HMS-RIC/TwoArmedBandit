@@ -649,28 +649,22 @@ function connectToArduino_Callback(hObject, eventdata, handles)
 %establishes a connection with the arduino to calibrate the number of water
 %dispensed by the solenoids by setting up a temporary calibration_log_ file
 %that is then deleted at the end of the function
-global arduinoConnection arduinoPort
-global arduinoMessageString
-arduinoMessageString = '';
-clearPorts();
-arduinoPortNum = findArduinoPort();
-if ~arduinoPortNum
-    disp('Can''t find serial port with Arduino')
-    return
-end
+
 global info calib
 info = struct;
 info.folderName = pwd;
 setupLogging('calibration_log');
-arduinoConnection = 0;
-arduinoPort = setupArduinoSerialPort(arduinoPortNum);
-% wait for Arduino startup
-fprintf('Waiting for Arduino startup')
-while (arduinoConnection == 0)
-    fprintf('.');
-    pause(0.5);
+
+global arduinoConn
+try
+    delete(arduinoConn);
 end
-fprintf('\n')
+baudRate = 115200;
+arduinoConn = ArduinoConnection(@interpretArduinoMessage, baudRate);
+if isempty(arduinoConn.serialConnection)
+    arduinoConn = [];
+    return
+end
 
 global leftPort
 leftPort = NosePort(6,3);

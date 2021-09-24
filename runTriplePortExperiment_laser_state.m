@@ -3,6 +3,9 @@ function runTriplePortExperiment_laser_state(varargin)
     %% State-Machine version of the triple-port experiment
     % Ofer Mazor, 2021-09-22
 
+    % print execution path
+    fprintf ('Execution path: %s\n', mfilename('fullpath'));
+
     global arduinoConnection arduinoPort
     global arduinoMessageString
     global p % parameter structure
@@ -39,23 +42,19 @@ function runTriplePortExperiment_laser_state(varargin)
 
 
     %% set up Arduino
-    arduinoMessageString = '';
-    clearPorts();
-    arduinoPortNum = findArduinoPort();
-    if ~arduinoPortNum
-        disp('Can''t find serial port with Arduino')
+    global arduinoConn
+    try
+        delete(arduinoConn);
+    end
+%     if ~isempty(arduinoConn)
+%         fclose(arduinoConn);
+%     end
+    baudRate = 115200;
+    arduinoConn = ArduinoConnection(@interpretArduinoMessage, baudRate);
+    if isempty(arduinoConn.serialConnection)
+        arduinoConn = [];
         return
     end
-    arduinoConnection = 0;
-    arduinoPort = setupArduinoSerialPort(arduinoPortNum);
-    % wait for Arduino startup
-    fprintf('Waiting for Arduino startup')
-    while (arduinoConnection == 0)
-        fprintf('.');
-        pause(0.5);
-    end
-    fprintf('\n')
-
 
     %% setup ports/arduino
     global centerPort rightPort leftPort syncPort
@@ -148,16 +147,16 @@ function runTriplePortExperiment_laser_state(varargin)
     % Where <event> is a poke/timeout/other even that might trigger a transition
 
 
-    global TrialState = 'ITI';
-    lastPokeTime = 0; % force immediate transition from ITI to START
+    global TrialState
+    TrialState = 'ITI';
+    lastPokeTime = datevec(0); % force immediate transition from ITI to START
 
     %% RUN THE PROGRAM:
     % Runs as long as info.running has not been set to false via the "Stop
     % Experiment" button
     while info.running
         pause(0.1)
-        % actively probe whether or not enough time has elapsed to start a
-        % new trial. If so, turn on the LED>
+        % check for iti timeout every ~100ms
         if etime(clock, lastPokeTime) >= iti
             stateTransitionEvent('itiTimeout');
         end
@@ -169,7 +168,7 @@ end
 
 %% stateTransitionEvent: transitions between states of the state machine
 function newTrialState = stateTransitionEvent(eventName)
-    global TrialState
+    global TrialState p
 
     newTrialState = '';
 
@@ -228,6 +227,7 @@ function newTrialState = stateTransitionEvent(eventName)
     % Here is where we perform all initialization actions for a new
     % state that only need to be performed once, at the start of the
     % state (e.g., turning LEDs on/off).
+    global centerPort leftPort rightPort
     switch newTrialState
         case ''
             % didn't switch states; do nothing
@@ -522,7 +522,9 @@ function triplePortCleanup()
         n{1}.deactivate();
     end
     AllNosePorts = {};
-    clearPorts(); %clear nose ports
+    global arduinoConn
+    fclose(arduinoConn);
+    delete(arduinoConn);
 
     % prompt user to select directory to save pokeHistory
     global info
