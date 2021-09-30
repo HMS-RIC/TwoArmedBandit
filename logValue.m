@@ -1,6 +1,5 @@
 function logValue(valName, value)
     global logFileID
-    c = clock;
     timestamp = datestr(clock,'dd-mmm-yyyy HH:MM:SS.FFF'); % include fractional seconds in timestamp
     if isnumeric(value)
         value = num2str(value);
