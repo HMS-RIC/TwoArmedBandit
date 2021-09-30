@@ -175,26 +175,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-function ledDuringRewardWindow_Callback(hObject, eventdata, handles)
-% hObject    handle to ledDuringRewardWindow (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of ledDuringRewardWindow as text
-%        str2double(get(hObject,'String')) returns contents of ledDuringRewardWindow as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function ledDuringRewardWindow_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to ledDuringRewardWindow (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
 function rewardDurationRight_Callback(hObject, eventdata, handles)
 % hObject    handle to rewardDurationRight (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -360,12 +340,10 @@ function runExperiment_Callback(hObject, eventdata, handles)
 %Uses str2double(get(handles.PARAMETER_NAME, 'String')) to set each
 %property of the parameters struct, which has been instantiated as a global
 %variable
-%LEDDuringRewardWindow is automatically set to 1
 global p
 p = struct;
 p.centerPokeTrigger = get(handles.centerPokeTrigger, 'Value');
 p.centerPokeRewardWindow = str2double(get(handles.centerPokeRewardWindow, 'String'));
-p.ledDuringRewardWindow = 1;
 p.leftRewardProb = str2double(get(handles.leftRewardProb, 'String'));
 p.rightRewardProb = str2double(get(handles.rightRewardProb, 'String'));
 p.rewardDurationRight = str2double(get(handles.rewardDurationRight, 'String'));
