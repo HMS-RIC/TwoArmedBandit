@@ -1,7 +1,8 @@
 function runTriplePortExperiment_laser_state(varargin)
 
     %% State-Machine version of the triple-port experiment
-    % Ofer Mazor, 2021-09-22
+    % previous versions by Ofer Mazor, Shay Neufeld, and others
+    % v6, Ofer Mazor, 2021-09-22
 
     % print execution path
     fprintf ('Execution path: %s\n', mfilename('fullpath'));
@@ -11,8 +12,10 @@ function runTriplePortExperiment_laser_state(varargin)
     global p % parameter structure
     global info % structure containing mouse name and folder to be saved in
 
-    % Hard code center stim probability for now
-    % p.centerLaserStimProb = 0.5;
+    % Hard code laser stimulus profile for now
+    p.laserDelay = 0; % in ms
+    p.laserPulseDuration = 500; % in ms
+    p.laserPulsePeriod = 500; % in ms
 
     %% Setup
 
@@ -84,24 +87,44 @@ function runTriplePortExperiment_laser_state(varargin)
     leftPort.noseInFunc = @noseIn;
     logValue('left port ID', leftPort.portID);
 
-    %for now let's hard code in the laser stim parameters:
-    rightPort.setLaserDelay(0); %this is in milliseconds
-    rightPort.setLaserEndTrig_Time();
+    %% Laser stim parameters:
+
+    if (p.sideLaserStimEndTrig == 1)
+        rightPort.setLaserEndTrig_Time();
+        leftPort.setLaserEndTrig_Time();
+    elseif (p.sideLaserStimEndTrig == 2)
+        rightPort.setLaserEndTrig_NoseOut();
+        leftPort.setLaserEndTrig_NoseOut();
+    elseif (p.sideLaserStimEndTrig == 3)
+        rightPort.setLaserEndTrig_NoseIn();
+        leftPort.setLaserEndTrig_NoseIn();
+    else
+        warning('p.sideLaserStimEndType: unknown value');
+    end
     rightPort.setLaserStimDuration(p.sideLaserStimDuration) %ms
-    rightPort.setLaserPulseDuration(10) %ms
-    rightPort.setLaserPulsePeriod(10) %ms
-
-    leftPort.setLaserDelay(0); %this is in milliseconds
-    leftPort.setLaserEndTrig_Time();
     leftPort.setLaserStimDuration(p.sideLaserStimDuration) %ms
-    leftPort.setLaserPulseDuration(10) %ms
-    leftPort.setLaserPulsePeriod(10) %ms
+    % Laser stimulus profile (hard coded for now):
+    rightPort.setLaserDelay(p.laserDelay); %this is in milliseconds
+    leftPort.setLaserDelay(p.laserDelay); %ms
+    rightPort.setLaserPulseDuration(p.laserPulseDuration) %ms
+    leftPort.setLaserPulseDuration(p.laserPulseDuration) %ms
+    rightPort.setLaserPulsePeriod(p.laserPulsePeriod) %ms
+    leftPort.setLaserPulsePeriod(p.laserPulsePeriod) %ms
 
-    centerPort.setLaserDelay(0); %this is in milliseconds
-    centerPort.setLaserEndTrig_Time();
+    if (p.centerLaserStimEndTrig == 1)
+        centerPort.setLaserEndTrig_Time();
+    elseif (p.centerLaserStimEndTrig == 2)
+        centerPort.setLaserEndTrig_NoseOut();
+    elseif (p.centerLaserStimEndTrig == 3)
+        centerPort.setLaserEndTrig_NoseIn();
+    else
+        warning('p.centerLaserStimEndType: unknown value');
+    end
     centerPort.setLaserStimDuration(p.centerLaserStimDuration) %ms
-    centerPort.setLaserPulseDuration(500) %ms
-    centerPort.setLaserPulsePeriod(500) %ms
+    % Laser stimulus profile (hard coded for now):
+    centerPort.setLaserDelay(p.laserDelay); %this is in milliseconds
+    centerPort.setLaserPulseDuration(p.laserPulseDuration) %ms
+    centerPort.setLaserPulsePeriod(p.laserPulsePeriod) %ms
 
     % create NosePort specifically for syncing with imaging
     % this object simply receives 5 volt pulses from the inscopix box
@@ -123,6 +146,7 @@ function runTriplePortExperiment_laser_state(varargin)
 
     global iti lastPokeTime
     iti = p.minInterTrialInterval;
+    rewardWin = p.centerPokeRewardWindow;
     lastPokeTime = clock;
 
     %create stats structure for online analysis and visualization
@@ -159,10 +183,16 @@ function runTriplePortExperiment_laser_state(varargin)
     % Experiment" button
     while info.running
         pause(0.1)
-        % check for iti timeout every ~100ms
-        if etime(clock, lastPokeTime) >= iti
+        % check for iti & reward timeouts every ~100ms
+        if strcmp(TrialState, 'ITI') & (etime(clock, lastPokeTime) >= iti)
             stateTransitionEvent('itiTimeout');
         end
+        if ( strcmp(TrialState, 'REWARD_WINDOW') & ...
+             p.centerPokeTrigger & ...
+             (etime(clock, lastPokeTime) >= rewardWin) )
+            stateTransitionEvent('rewardTimeout');
+        end
+
     end
     % triplePortCleanup(); % redundant??
 end
@@ -178,10 +208,11 @@ function newTrialState = stateTransitionEvent(eventName)
     % 1) Respond to events based on the current state
     switch TrialState
         case 'ITI'
-            % wait for itiTimeout event before transitioning to START
-            % reset timer on every poke
-            % if in training mode (p.centerPokeTrigger == false),
-            %   transition stright to REWARD_WINDOW
+            % Inter Trial Interval state
+            % - wait for itiTimeout event before transitioning to START
+            % - reset timer on every poke
+            % - if in training mode (p.centerPokeTrigger == false),
+            %     transition stright to REWARD_WINDOW
             switch eventName
                 case {'centerPoke', 'leftPoke', 'rightPoke'}
                      logIncorrectPoke(eventName);
@@ -194,8 +225,9 @@ function newTrialState = stateTransitionEvent(eventName)
             end
 
         case 'START'
-            % wait for central poke to transition to REWARD_WINDOW
-            % side pokes result in transition to ITI state
+            % Start state
+            % - wait for central poke to transition to REWARD_WINDOW
+            % - side pokes result in transition to ITI state
             switch eventName
                 case 'centerPoke'
                     newTrialState = 'REWARD_WINDOW';
@@ -206,9 +238,14 @@ function newTrialState = stateTransitionEvent(eventName)
             end
 
         case 'REWARD_WINDOW'
+            % Reward Window state
+            % - wait for side pokes to deliver probabilistic reward
+            % - center poke or reward-window-timeout result in aborted trial and transition to ITI state
             switch eventName
                 case 'rewardTimeout'
-                    newTrialState = 'ITI';
+                    if (p.centerPokeTrigger)
+                        newTrialState = 'ITI';
+                    end
                 case 'centerPoke'
                     logIncorrectPoke(eventName);
                     newTrialState = 'ITI';
@@ -223,6 +260,8 @@ function newTrialState = stateTransitionEvent(eventName)
 
     % 2) State Transition (if needed)
     if ~strcmp(newTrialState,'')
+        % DEBUG:
+        % fprintf('***      TRANSITION:   Old: %s   Trigger: %s    New: %s\n', TrialState, eventName, newTrialState);
         TrialState = newTrialState;
     end
 
@@ -334,7 +373,7 @@ function syncIn(portID)
 end
 
 function noseIn(portID)
-    global rightPort leftPort centerPort
+    global rightPort leftPort centerPort pokeCount
     disp('noseIn')
 
     % Initiate appropriate state transition
