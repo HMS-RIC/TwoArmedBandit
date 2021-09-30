@@ -22,7 +22,7 @@ function varargout = NewGUI(varargin)
 
 % Edit the above text to modify the response to help NewGUI
 
-% Last Modified by GUIDE v2.5 11-Aug-2017 11:35:25
+% Last Modified by GUIDE v2.5 24-Sep-2021 11:00:31
 
 % Begin initialization code - DO NOT EDIT
 %NOTE: THE ONLY REAL CHANGE IS IN THE LAST FUNCTION... THE BUTTON PUSHED
@@ -78,7 +78,6 @@ set(handles.rightCalibDuration,'enable','off');
 set(handles.getLeftCalibDuration,'enable','off');
 set(handles.getRightCalibDuration,'enable','off');
 set(handles.numIterations,'enable','off');
-fprintf('NewGUI_OpeningFcn\n')
 
 
 
@@ -296,18 +295,18 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-function laserstimprob_Callback(hObject, eventdata, handles)
-% hObject    handle to laserstimprob (see GCBO)
+function sideLaserStimProb_Callback(hObject, eventdata, handles)
+% hObject    handle to sidelaserstimprob (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of laserstimprob as text
-%        str2double(get(hObject,'String')) returns contents of laserstimprob as a double
+% Hints: get(hObject,'String') returns contents of sidelaserstimprob as text
+%        str2double(get(hObject,'String')) returns contents of sidelaserstimprob as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function laserstimprob_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to laserstimprob (see GCBO)
+function sideLaserStimProb_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to sidelaserstimprob (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -344,12 +343,12 @@ if handles.useMarkov.Value == 1
     set(handles.markov, 'enable', 'on');
     set(handles.blockRangeMin, 'enable', 'off');
     set(handles.blockRangeMax, 'enable', 'off');
-    set(handles.laserstimprob, 'enable', 'off');
+    set(handles.sideLaserStimProb, 'enable', 'off');
 else
     set(handles.markov, 'enable', 'off');
     set(handles.blockRangeMin, 'enable', 'on');
     set(handles.blockRangeMax, 'enable', 'on');
-    set(handles.laserstimprob, 'enable', 'on');
+    set(handles.sideLaserStimProb, 'enable', 'on');
 end
 
 
@@ -374,7 +373,12 @@ p.rewardDurationLeft = str2double(get(handles.rewardDurationLeft, 'String'));
 p.minInterTrialInterval = str2double(get(handles.minInterTrialInterval, 'String'));
 p.blockRangeMin = str2double(get(handles.blockRangeMin, 'String'));
 p.blockRangeMax = str2double(get(handles.blockRangeMax, 'String'));
-p.laserstimprob = str2double(get(handles.laserstimprob, 'String'));
+p.sideLaserStimProb = str2double(get(handles.sideLaserStimProb, 'String'));
+p.sideLaserStimDuration = str2double(get(handles.sideLaserStimDuration, 'String'));
+p.sideLaserStimEndTrig = get(handles.sideLaserStimEndTrig, 'Value');
+p.centerLaserStimProb = str2double(get(handles.centerLaserStimProb, 'String'));
+p.centerLaserStimDuration = str2double(get(handles.centerLaserStimDuration, 'String'));
+p.centerLaserStimEndTrig = get(handles.centerLaserStimEndTrig, 'Value');
 p.markov = str2double(get(handles.markov, 'String'));
 p.ismarkov = get(handles.useMarkov, 'Value');
 %creates a global info struct to store the mouse's name and the folder's
@@ -420,7 +424,12 @@ if ready
     set(handles.minInterTrialInterval, 'enable', 'off');
     set(handles.blockRangeMin, 'enable', 'off');
     set(handles.blockRangeMax, 'enable', 'off');
-    set(handles.laserstimprob, 'enable', 'off');
+    set(handles.sideLaserStimProb, 'enable', 'off');
+    set(handles.sideLaserStimDuration, 'enable', 'off');
+    set(handles.sideLaserStimEndTrig, 'enable', 'off');
+    set(handles.centerLaserStimProb, 'enable', 'off');
+    set(handles.centerLaserStimDuration, 'enable', 'off');
+    set(handles.centerLaserStimEndTrig, 'enable', 'off');
     set(handles.markov, 'enable', 'off');
     set(handles.mouseName, 'enable', 'off');
     set(handles.folderPath, 'enable', 'off');
@@ -463,7 +472,7 @@ if ~info.save
     end
 end
 info.running = false;
-% reset_Callback(hObject, eventdata, handles)
+reset_Callback(hObject, eventdata, handles)
 % set(handles.stopExperiment, 'enable', 'off');
 % set(handles.save, 'enable', 'off');
 
@@ -519,7 +528,12 @@ set(handles.rewardDurationLeft, 'enable', 'on');
 set(handles.minInterTrialInterval, 'enable', 'on');
 set(handles.blockRangeMin, 'enable', 'on');
 set(handles.blockRangeMax, 'enable', 'on');
-set(handles.laserstimprob, 'enable', 'on');
+set(handles.sideLaserStimProb, 'enable', 'on');
+set(handles.sideLaserStimDuration, 'enable', 'on');
+set(handles.sideLaserStimEndTrig, 'enable', 'on');
+set(handles.centerLaserStimProb, 'enable', 'on');
+set(handles.centerLaserStimDuration, 'enable', 'on');
+set(handles.centerLaserStimEndTrig, 'enable', 'on');
 set(handles.markov, 'enable', 'off');
 set(handles.mouseName, 'enable', 'on');
 set(handles.folderPath, 'enable', 'on');
@@ -527,38 +541,38 @@ set(handles.chooseFolder, 'enable', 'on');
 set(handles.runExperiment, 'enable', 'on');
 set(handles.stopExperiment,'enable','off');
 set(handles.save,'enable','off');
-set(handles.centerPokeTrigger, 'String','1');
-set(handles.centerPokeRewardWindow, 'String','2');
-set(handles.leftRewardProb, 'String','0.2');
-set(handles.rightRewardProb, 'String','0.8');
-set(handles.rewardDurationRight, 'String', '40');
-set(handles.rewardDurationLeft, 'String', '45');
-set(handles.minInterTrialInterval, 'String', '1');
-set(handles.blockRangeMin, 'String', '50');
-set(handles.blockRangeMax, 'String', '50');
-set(handles.laserstimprob, 'String', '0');
-set(handles.markov, 'String', '0');
-set(handles.useMarkov, 'Value', 0);
-set(handles.mouseName,'String','');
-set(handles.folderPath,'String','Default Folder Path');
-set(handles.save,'Value',1);
+% set(handles.centerPokeTrigger, 'String','1');
+% set(handles.centerPokeRewardWindow, 'String','2');
+% set(handles.leftRewardProb, 'String','0.2');
+% set(handles.rightRewardProb, 'String','0.8');
+% set(handles.rewardDurationRight, 'String', '40');
+% set(handles.rewardDurationLeft, 'String', '45');
+% set(handles.minInterTrialInterval, 'String', '1');
+% set(handles.blockRangeMin, 'String', '50');
+% set(handles.blockRangeMax, 'String', '50');
+% set(handles.sideLaserStimProb, 'String', '0');
+% set(handles.markov, 'String', '0');
+% set(handles.useMarkov, 'Value', 0);
+% set(handles.mouseName,'String','');
+% set(handles.folderPath,'String','Default Folder Path');
+% set(handles.save,'Value',1);
 set(handles.reset,'enable','on');
 set(handles.leftCalibDuration,'enable','on');
 set(handles.rightCalibDuration,'enable','on');
 set(handles.getLeftCalibDuration,'enable','on');
 set(handles.getRightCalibDuration,'enable','on');
-set(handles.leftCalibDuration,'String','45');
-set(handles.rightCalibDuration,'String','45');
-set(handles.numIterations,'String','100');
+% set(handles.leftCalibDuration,'String','45');
+% set(handles.rightCalibDuration,'String','45');
+% set(handles.numIterations,'String','100');
 set(handles.numIterations,'enable','off');
 set(handles.rightCalibDuration,'enable','off');
 set(handles.leftCalibDuration,'enable','off');
 set(handles.getLeftCalibDuration,'enable','off');
 set(handles.getRightCalibDuration,'enable','off');
 set(handles.connectToArduino,'enable','on');
-global calib
-calib.left = 45;
-calib.right = 45;
+% global calib
+% calib.left = 45;
+% calib.right = 45;
 set(handles.statsTable,'data',[0,0,0;0,0,0;0,0,0]);
 set(handles.statsTable,'enable','off');
 
@@ -714,26 +728,115 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-
-function edit17_Callback(hObject, eventdata, handles)
-% hObject    handle to laserstimprob (see GCBO)
+function centerLaserStimProb_Callback(hObject, eventdata, handles)
+% hObject    handle to centerLaserStimProb (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of laserstimprob as text
-%        str2double(get(hObject,'String')) returns contents of laserstimprob as a double
+% Hints: get(hObject,'String') returns contents of centerLaserStimProb as text
+%        str2double(get(hObject,'String')) returns contents of centerLaserStimProb as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit17_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to laserstimprob (see GCBO)
+function centerLaserStimProb_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to centerLaserStimProb (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
 
 
-% Hint: get(hObject,'Value') returns toggle state of useMarkov
+function sideLaserStimDuration_Callback(hObject, eventdata, handles)
+% hObject    handle to sideLaserStimDuration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of sideLaserStimDuration as text
+%        str2double(get(hObject,'String')) returns contents of sideLaserStimDuration as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function sideLaserStimDuration_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to sideLaserStimDuration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function centerLaserStimDuration_Callback(hObject, eventdata, handles)
+% hObject    handle to centerLaserStimDuration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of centerLaserStimDuration as text
+%        str2double(get(hObject,'String')) returns contents of centerLaserStimDuration as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function centerLaserStimDuration_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to centerLaserStimDuration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in sideLaserStimEndTrig.
+function sideLaserStimEndTrig_Callback(hObject, eventdata, handles)
+% hObject    handle to sideLaserStimEndTrig (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns sideLaserStimEndTrig contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from sideLaserStimEndTrig
+
+
+% --- Executes during object creation, after setting all properties.
+function sideLaserStimEndTrig_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to sideLaserStimEndTrig (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in centerLaserStimEndTrig.
+function centerLaserStimEndTrig_Callback(hObject, eventdata, handles)
+% hObject    handle to centerLaserStimEndTrig (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns centerLaserStimEndTrig contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from centerLaserStimEndTrig
+
+
+% --- Executes during object creation, after setting all properties.
+function centerLaserStimEndTrig_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to centerLaserStimEndTrig (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

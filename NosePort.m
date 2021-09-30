@@ -103,6 +103,15 @@ classdef NosePort  < handle
         function setLaserDelay(obj, delay)
             obj.arduinoCommand('Y', delay);
         end
+        function setLaserEndTrig_Time(obj)
+            obj.arduinoCommand('G', 0);
+        end
+        function setLaserEndTrig_NoseIn(obj)
+            obj.arduinoCommand('G', 1);
+        end
+        function setLaserEndTrig_NoseOut(obj)
+            obj.arduinoCommand('G', 2);
+        end
         function setLaserStimDuration(obj, duration)
             obj.arduinoCommand('T', duration);
         end

@@ -12,7 +12,7 @@ function runTriplePortExperiment_laser_state(varargin)
     global info % structure containing mouse name and folder to be saved in
 
     % Hard code center stim probability for now
-    p.centerLaserStimProb = 0.5;
+    % p.centerLaserStimProb = 0.5;
 
     %% Setup
 
@@ -86,17 +86,20 @@ function runTriplePortExperiment_laser_state(varargin)
 
     %for now let's hard code in the laser stim parameters:
     rightPort.setLaserDelay(0); %this is in milliseconds
-    rightPort.setLaserStimDuration(10) %ms
+    rightPort.setLaserEndTrig_Time();
+    rightPort.setLaserStimDuration(p.sideLaserStimDuration) %ms
     rightPort.setLaserPulseDuration(10) %ms
     rightPort.setLaserPulsePeriod(10) %ms
 
     leftPort.setLaserDelay(0); %this is in milliseconds
-    leftPort.setLaserStimDuration(10) %ms
+    leftPort.setLaserEndTrig_Time();
+    leftPort.setLaserStimDuration(p.sideLaserStimDuration) %ms
     leftPort.setLaserPulseDuration(10) %ms
     leftPort.setLaserPulsePeriod(10) %ms
 
     centerPort.setLaserDelay(0); %this is in milliseconds
-    centerPort.setLaserStimDuration(500) %ms
+    centerPort.setLaserEndTrig_Time();
+    centerPort.setLaserStimDuration(p.centerLaserStimDuration) %ms
     centerPort.setLaserPulseDuration(500) %ms
     centerPort.setLaserPulsePeriod(500) %ms
 
@@ -253,7 +256,7 @@ function newTrialState = stateTransitionEvent(eventName)
             activateLeft = (rand <= p.leftRewardProb); % activate left port with prob = p.leftRewardProb
             activateRight = (rand <= p.rightRewardProb); % activate right port with prob = p.rightRewardProb
             activateSidePorts(activateLeft, activateRight);
-            activateSideLaserStimWithProb(p.laserstimprob);
+            activateSideLaserStimWithProb(p.sideLaserStimProb);
 
         otherwise
             warning('Unexpected state.')
