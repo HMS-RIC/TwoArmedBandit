@@ -279,6 +279,7 @@ function newTrialState = stateTransitionEvent(eventName)
             leftPort.ledOff();
             rightPort.ledOff();
             deactivateCenterLaserStim();
+            deactivateSideLaserStim();
             deactivateSidePorts();
 
         case 'START'
