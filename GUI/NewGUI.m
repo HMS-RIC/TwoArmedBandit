@@ -422,6 +422,7 @@ if ready
     set(handles.getLeftCalibDuration,'enable','off');
     set(handles.getRightCalibDuration,'enable','off');
     set(handles.statsTable,'enable','on');
+    set(handles.statsTable,'data',[0,0,0;0,0,0;0,0,0]);
     if p.ismarkov == 0
         runTriplePortExperiment_laser_state
     elseif p.ismarkov ==1
@@ -444,7 +445,7 @@ global info
 info.save = get(handles.save,'Value');
 if ~info.save
     answer = lower(inputdlg('Do you want to save data for this session?','SAVE?'));
-    if ~strcmp(answer,'n') && ~strcmp(answer,'no')
+    if ~strcmp(answer,'n') & ~strcmp(answer,'no')
         set(handles.save,'Value',1);
         info.save = 1;
     end
@@ -551,7 +552,7 @@ set(handles.connectToArduino,'enable','on');
 % global calib
 % calib.left = 45;
 % calib.right = 45;
-set(handles.statsTable,'data',[0,0,0;0,0,0;0,0,0]);
+% set(handles.statsTable,'data',[0,0,0;0,0,0;0,0,0]);
 set(handles.statsTable,'enable','off');
 
 % hObject    handle to reset (see GCBO)
