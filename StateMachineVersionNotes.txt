@@ -10,3 +10,12 @@ Need for Markov option?
 
 Poke timing counts on NoseIn. If nose is in too long, next trial can already start. OK for now?
 
+Overlapping laser stimuli interact in unexpected ways.
+
+Some laser parameters are hard-coded and shared with center & sides:
+- delay, pulse duration, pulse period
+
+To Do:
+- Add "deliver extra reward button"
+- Stop expt button: turn off all LEDs/Laser/reward
+
