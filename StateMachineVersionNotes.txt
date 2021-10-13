@@ -5,3 +5,8 @@ pokeHistory.laser -> logs side laser state (as before)
 pokeHistory.centerLaserState -> logs center laser state (new)
 
 After trial is initiated, does centerPoke count as "decision" "incorrect" poke? Transition to ITI??
+
+Need for Markov option?
+
+Poke timing counts on NoseIn. If nose is in too long, next trial can already start. OK for now?
+

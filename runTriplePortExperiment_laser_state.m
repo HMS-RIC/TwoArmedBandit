@@ -162,12 +162,15 @@ function runTriplePortExperiment_laser_state(varargin)
 
     %% Set up Trial State Machine
     % Global variable TrialState will contain the name of the current state:
-    %   'ITI'       Forced no-poke period. Every poke resets timer.
+    %   'ITI'       Inter-Trial Interval: Forced no-poke period. Every poke resets timer.
     %                   Transition to START when no-poke condition is met.
+    %
     %   'START'     Wait for center poke to initiate.
     %                   Transition to 'REWARD' upon center poke.
+    %
     %   'REWARD_WINDOW' Within the reward window. Side pokes get probabilistically rewarded.
     %                   Transition to 'ITI' upon any poke or timeout.
+    %
     %
     % To initiate a state transition call:
     %       stateTransitionEvent(<event>)
@@ -187,15 +190,14 @@ function runTriplePortExperiment_laser_state(varargin)
         if strcmp(TrialState, 'ITI') & (etime(clock, lastPokeTime) >= iti)
             stateTransitionEvent('itiTimeout');
         end
-        if ( strcmp(TrialState, 'REWARD_WINDOW') & ...
-             p.centerPokeTrigger & ...
-             (etime(clock, lastPokeTime) >= rewardWin) )
+        if (    strcmp(TrialState, 'REWARD_WINDOW') & ...
+                p.centerPokeTrigger & ...
+                (etime(clock, lastPokeTime) >= rewardWin) )
             stateTransitionEvent('rewardTimeout');
         end
-
     end
-    % triplePortCleanup(); % redundant??
-end
+
+end % runTriplePortExperiment
 
 
 
@@ -287,6 +289,8 @@ function newTrialState = stateTransitionEvent(eventName)
             leftPort.ledOff();
             rightPort.ledOff();
             activateCenterLaserStimWithProb(p.centerLaserStimProb);
+            deactivateSideLaserStim();
+            deactivateSidePorts();
 
         case 'REWARD_WINDOW'
             centerPort.ledOff();
