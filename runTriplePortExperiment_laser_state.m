@@ -12,10 +12,10 @@ function runTriplePortExperiment_laser_state(varargin)
     global p % parameter structure
     global info % structure containing mouse name and folder to be saved in
 
-    % Hard code laser stimulus profile for now
-    p.laserDelay = 0; % in ms
-    p.laserPulseDuration = 500; % in ms
-    p.laserPulsePeriod = 500; % in ms
+    % % Hard code laser stimulus profile for now
+    % p.laserDelay = 0; % in ms
+    % p.laserPulseDuration = 500; % in ms
+    % p.laserPulsePeriod = 500; % in ms
 
     %% Setup
 
@@ -434,8 +434,8 @@ function updatePokeStats(pokeSide, pokeType)
         pokeHistory(pokeCount).rightPortStats.prob = p.rightRewardProb;
         pokeHistory(pokeCount).leftPortStats.ACTIVATE = activateLeft;
         pokeHistory(pokeCount).rightPortStats.ACTIVATE = activateRight;
-        pokeHistory(pokeCount).laser = side_laser_state;
-        pokeHistory(pokeCount).laser = center_laser_state;
+        pokeHistory(pokeCount).sideLaserState = side_laser_state;
+        pokeHistory(pokeCount).centerLaserState = center_laser_state;
     end
 
     % Update pokeHistory and initiate appropriate state transition
@@ -554,11 +554,14 @@ end
 function triplePortCleanup()
     disp('Cleaning up...')
 
-    %turn all LEDs off
+    %turn all LEDs/lasers off
     global centerPort rightPort leftPort
     centerPort.ledOff();
     rightPort.ledOff();
     leftPort.ledOff();
+    centerPort.deactivateLaser();
+    rightPort.deactivateLaser();
+    leftPort.deactivateLaser();
 
     %close log file
     global logFileID AllNosePorts

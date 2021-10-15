@@ -1,28 +1,28 @@
-function varargout = NewGUI(varargin)
-% NEWGUI MATLAB code for NewGUI.fig
-%      NEWGUI, by itself, creates a new NEWGUI or raises the existing
+function varargout = TriplePortGUI(varargin)
+% TRIPLEPORTGUI MATLAB code for TriplePortGUI.fig
+%      TRIPLEPORTGUI, by itself, creates a new TRIPLEPORTGUI or raises the existing
 %      singleton*.
 %
-%      H = NEWGUI returns the handle to a new NEWGUI or the handle to
+%      H = TRIPLEPORTGUI returns the handle to a new TRIPLEPORTGUI or the handle to
 %      the existing singleton*.
 %
-%      NEWGUI('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in NEWGUI.M with the given input arguments.
+%      TRIPLEPORTGUI('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in TRIPLEPORTGUI.M with the given input arguments.
 %
-%      NEWGUI('Property','Value',...) creates a new NEWGUI or raises the
+%      TRIPLEPORTGUI('Property','Value',...) creates a new TRIPLEPORTGUI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before NewGUI_OpeningFcn gets called.  An
+%      applied to the GUI before TriplePortGUI_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to NewGUI_OpeningFcn via varargin.
+%      stop.  All inputs are passed to TriplePortGUI_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help NewGUI
+% Edit the above text to modify the response to help TriplePortGUI
 
-% Last Modified by GUIDE v2.5 24-Sep-2021 11:00:31
+% Last Modified by GUIDE v2.5 15-Oct-2021 14:56:28
 
 % Begin initialization code - DO NOT EDIT
 %NOTE: THE ONLY REAL CHANGE IS IN THE LAST FUNCTION... THE BUTTON PUSHED
@@ -31,8 +31,8 @@ function varargout = NewGUI(varargin)
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
     'gui_Singleton',  gui_Singleton, ...
-    'gui_OpeningFcn', @NewGUI_OpeningFcn, ...
-    'gui_OutputFcn',  @NewGUI_OutputFcn, ...
+    'gui_OpeningFcn', @TriplePortGUI_OpeningFcn, ...
+    'gui_OutputFcn',  @TriplePortGUI_OutputFcn, ...
     'gui_LayoutFcn',  [] , ...
     'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -47,22 +47,22 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before NewGUI is made visible.
-function NewGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before TriplePortGUI is made visible.
+function TriplePortGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to NewGUI (see VARARGIN)
+% varargin   command line arguments to TriplePortGUI (see VARARGIN)
 
-% Choose default command line output for NewGUI
+% Choose default command line output for TriplePortGUI
 handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
 global handlesCopy
 handlesCopy = handles;
-% UIWAIT makes NewGUI wait for user response (see UIRESUME)
+% UIWAIT makes TriplePortGUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 %initially disables the Stop Experiment Button and save checkmark.
 %also initially sets the checkmark to checked
@@ -82,7 +82,7 @@ set(handles.numIterations,'enable','off');
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = NewGUI_OutputFcn(hObject, eventdata, handles)
+function varargout = TriplePortGUI_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -294,43 +294,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-function markov_Callback(hObject, eventdata, handles)
-% hObject    handle to markov (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of markov as text
-%        str2double(get(hObject,'String')) returns contents of markov as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function markov_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to markov (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
-% --- Executes on button press in useMarkov.
-function useMarkov_Callback(hObject, eventdata, handles)
-% hObject    handle to useMarkov (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-if handles.useMarkov.Value == 1
-    set(handles.markov, 'enable', 'on');
-    set(handles.blockRangeMin, 'enable', 'off');
-    set(handles.blockRangeMax, 'enable', 'off');
-    set(handles.sideLaserStimProb, 'enable', 'off');
-else
-    set(handles.markov, 'enable', 'off');
-    set(handles.blockRangeMin, 'enable', 'on');
-    set(handles.blockRangeMax, 'enable', 'on');
-    set(handles.sideLaserStimProb, 'enable', 'on');
-end
-
 
 % --- Executes on button press in runExperiment.
 function runExperiment_Callback(hObject, eventdata, handles)
@@ -357,8 +320,10 @@ p.sideLaserStimEndTrig = get(handles.sideLaserStimEndTrig, 'Value');
 p.centerLaserStimProb = str2double(get(handles.centerLaserStimProb, 'String'));
 p.centerLaserStimDuration = str2double(get(handles.centerLaserStimDuration, 'String'));
 p.centerLaserStimEndTrig = get(handles.centerLaserStimEndTrig, 'Value');
-p.markov = str2double(get(handles.markov, 'String'));
-p.ismarkov = get(handles.useMarkov, 'Value');
+p.laserDelay = str2double(get(handles.laserDelay, 'String'));
+p.laserPulseDuration = str2double(get(handles.laserPulseDuration, 'String'));
+p.laserPulsePeriod = str2double(get(handles.laserPulsePeriod, 'String'));
+
 %creates a global info struct to store the mouse's name and the folder's
 %path as inputted by the user. sets the running field to true and the
 %save field to NaN
@@ -375,19 +340,6 @@ if isempty(info.mouseName) || strcmp(info.folderName,'Default Folder Path') || s
     ready = false;
     errordlg('Must input the mouse"s name and the directory in which the session"s data will be saved', 'INPUTS REQUIRED')
     %DIALOG BOX HERE
-end
-
-if p.ismarkov==0 && ~isempty(strfind(info.mouseName, 'cb')) % use checkbox first
-    button = questdlg('Are you sure you don''t want to use Markovian transition probabilities?');
-    if strcmp(button,'No') || strcmp(button, 'Cancel')
-        ready = false;
-    end
-end
-if p.ismarkov==1
-    if p.markov <= 0 || p.markov >= 1 % check if valid entry for tprob
-        ready = false;
-        errordlg('Please enter a value for Markovian Transition Probability between 0 and 1.')
-    end
 end
 
 %if everything checks out, everything is disabled but the start and
@@ -408,7 +360,9 @@ if ready
     set(handles.centerLaserStimProb, 'enable', 'off');
     set(handles.centerLaserStimDuration, 'enable', 'off');
     set(handles.centerLaserStimEndTrig, 'enable', 'off');
-    set(handles.markov, 'enable', 'off');
+    set(handles.laserDelay, 'enable', 'off');
+    set(handles.laserPulseDuration, 'enable', 'off');
+    set(handles.laserPulsePeriod, 'enable', 'off');
     set(handles.mouseName, 'enable', 'off');
     set(handles.folderPath, 'enable', 'off');
     set(handles.chooseFolder, 'enable', 'off');
@@ -421,15 +375,11 @@ if ready
     set(handles.rightCalibDuration,'enable','off');
     set(handles.getLeftCalibDuration,'enable','off');
     set(handles.getRightCalibDuration,'enable','off');
+    set(handles.leftRewardButton,'enable','on');
+    set(handles.rightRewardButton,'enable','on');
     set(handles.statsTable,'enable','on');
     set(handles.statsTable,'data',[0,0,0;0,0,0;0,0,0]);
-    if p.ismarkov == 0
-        runTriplePortExperiment_laser_state
-    elseif p.ismarkov ==1
-        runTriplePortExperiment_markov
-    else
-        errordlg('Please enter a value for Markovian Transition Probability between 0 and 1.')
-    end
+    runTriplePortExperiment_laser_state
     
 end
 
@@ -513,13 +463,17 @@ set(handles.sideLaserStimEndTrig, 'enable', 'on');
 set(handles.centerLaserStimProb, 'enable', 'on');
 set(handles.centerLaserStimDuration, 'enable', 'on');
 set(handles.centerLaserStimEndTrig, 'enable', 'on');
-set(handles.markov, 'enable', 'off');
+set(handles.laserDelay, 'enable', 'on');
+set(handles.laserPulseDuration, 'enable', 'on');
+set(handles.laserPulsePeriod, 'enable', 'on');
 set(handles.mouseName, 'enable', 'on');
 set(handles.folderPath, 'enable', 'on');
 set(handles.chooseFolder, 'enable', 'on');
 set(handles.runExperiment, 'enable', 'on');
 set(handles.stopExperiment,'enable','off');
 set(handles.save,'enable','off');
+set(handles.leftRewardButton,'enable','off');
+set(handles.rightRewardButton,'enable','off');
 % set(handles.centerPokeTrigger, 'String','1');
 % set(handles.centerPokeRewardWindow, 'String','2');
 % set(handles.leftRewardProb, 'String','0.2');
@@ -530,16 +484,10 @@ set(handles.save,'enable','off');
 % set(handles.blockRangeMin, 'String', '50');
 % set(handles.blockRangeMax, 'String', '50');
 % set(handles.sideLaserStimProb, 'String', '0');
-% set(handles.markov, 'String', '0');
-% set(handles.useMarkov, 'Value', 0);
 % set(handles.mouseName,'String','');
 % set(handles.folderPath,'String','Default Folder Path');
 % set(handles.save,'Value',1);
 set(handles.reset,'enable','on');
-set(handles.leftCalibDuration,'enable','on');
-set(handles.rightCalibDuration,'enable','on');
-set(handles.getLeftCalibDuration,'enable','on');
-set(handles.getRightCalibDuration,'enable','on');
 % set(handles.leftCalibDuration,'String','45');
 % set(handles.rightCalibDuration,'String','45');
 % set(handles.numIterations,'String','100');
@@ -815,6 +763,92 @@ function centerLaserStimEndTrig_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 % Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in rightRewardButton.
+function rightRewardButton_Callback(hObject, eventdata, handles)
+% hObject    handle to rightRewardButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    global rightPort
+    rightPort.deliverReward();
+
+
+% --- Executes on button press in leftRewardButton.
+function leftRewardButton_Callback(hObject, eventdata, handles)
+% hObject    handle to leftRewardButton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+    global leftPort
+    leftPort.deliverReward();
+
+
+function laserDelay_Callback(hObject, eventdata, handles)
+% hObject    handle to laserDelay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of laserDelay as text
+%        str2double(get(hObject,'String')) returns contents of laserDelay as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function laserDelay_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to laserDelay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function laserPulsePeriod_Callback(hObject, eventdata, handles)
+% hObject    handle to laserPulsePeriod (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of laserPulsePeriod as text
+%        str2double(get(hObject,'String')) returns contents of laserPulsePeriod as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function laserPulsePeriod_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to laserPulsePeriod (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function laserPulseDuration_Callback(hObject, eventdata, handles)
+% hObject    handle to laserPulseDuration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of laserPulseDuration as text
+%        str2double(get(hObject,'String')) returns contents of laserPulseDuration as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function laserPulseDuration_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to laserPulseDuration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
