@@ -6,7 +6,7 @@ pokeHistory.centerLaserState -> logs center laser state (new)
 
 After trial is initiated, does centerPoke count as "decision" "incorrect" poke? Transition to ITI??
 
-Need for Markov option?
+Need for Markov option? -NO
 
 Poke timing counts on NoseIn. If nose is in too long, next trial can already start. OK for now?
 
@@ -16,6 +16,8 @@ Some laser parameters are hard-coded and shared with center & sides:
 - delay, pulse duration, pulse period
 
 To Do:
-- Add "deliver extra reward button"
+- **** Add "deliver extra reward button" (during experiment)
 - Stop expt button: turn off all LEDs/Laser/reward
+- Have Max-duration timeout for variable laser stim
+- Add new laser stim type: center-in -> side-out
 
