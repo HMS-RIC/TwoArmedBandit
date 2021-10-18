@@ -9,7 +9,7 @@ classdef NosePort  < handle
         ledPin = 0;
         ledState = 0;
         laserPin = 0;
-        laserActive = 0;
+        laserActive = false;
         noseInFunc = [];
         noseOutFunc = [];
         rewardFunc = [];
@@ -122,10 +122,16 @@ classdef NosePort  < handle
             obj.arduinoCommand('I', pulsePeriod);
         end
         function activateLaser(obj)
-            obj.arduinoCommand('V', 1);
+            if (obj.laserPin ~= 0)
+                obj.arduinoCommand('V', 1);
+                obj.laserActive = true;
+            end
         end
         function deactivateLaser(obj)
-            obj.arduinoCommand('V', 0);
+            if obj.laserActive
+                obj.arduinoCommand('V', 0);
+                obj.laserActive = false;
+            end
         end
         function laserOn(obj)
             if isa(obj.laserOnFunc,'function_handle')
