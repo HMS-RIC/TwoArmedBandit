@@ -3,21 +3,25 @@
 pokeHistory.laser -> logs side laser state (as before)
 	(can we change this to 'sideLaserState' ?)
 pokeHistory.centerLaserState -> logs center laser state (new)
-
-After trial is initiated, does centerPoke count as "decision" "incorrect" poke? Transition to ITI??
-
-Need for Markov option? -NO
+- Testing this out
 
 Poke timing counts on NoseIn. If nose is in too long, next trial can already start. OK for now?
 
 Overlapping laser stimuli interact in unexpected ways.
 
-Some laser parameters are hard-coded and shared with center & sides:
-- delay, pulse duration, pulse period
+How to distinguish between mouse-elicited rewards (true rewards)
+and "bonus" rewards manually delivered by experimenter
 
 To Do:
 - **** Add "deliver extra reward button" (during experiment)
+	- Done, but how does it affect trial history/statistics???
 - Stop expt button: turn off all LEDs/Laser/reward
+	- Done ?
 - Have Max-duration timeout for variable laser stim
 - Add new laser stim type: center-in -> side-out
 
+
+After trial is initiated, does centerPoke count as "decision" "incorrect" poke? Transition to ITI??
+-Yes
+
+Need for Markov option? -NO

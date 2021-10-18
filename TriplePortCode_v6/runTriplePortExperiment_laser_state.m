@@ -482,6 +482,15 @@ function rewardFunc(portID)
     global h
     global currBlockReward
 
+    % TODO: Distinguish between mouse-elicited rewards (true rewards)
+    %       and "bonus" rewards manually delivered by experimenter
+    %
+    % For now, fix simple issue: when experimenter triggers a reward
+    % when poke count is 0:
+    if (pokeCount == 0)
+        return;
+    end
+
     currBlockReward = currBlockReward + 1;
     display(currBlockReward)
 
