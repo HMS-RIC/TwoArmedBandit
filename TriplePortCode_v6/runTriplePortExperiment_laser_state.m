@@ -592,19 +592,22 @@ function triplePortCleanup()
     if info.save == 1
         global pokeHistory stats sync_times
         stats.sync_times = sync_times;
-        folderName = info.folderName;
-        cd(folderName);
+        saveFolderName = info.folderName;
+        % cd(folderName);
         currDay = datestr(date);
         %save pokeHistory and stats variables
-        save(strcat('pokeHistory',currDay,'.mat'),'pokeHistory');
-        save(strcat('stats',currDay,'.mat'),'stats');
+        historyFile = fullfile(saveFolderName, strcat('pokeHistory',currDay,'.mat'));
+        save(historyFile,'pokeHistory');
+        statsFile = fullfile(saveFolderName, strcat('stats',currDay,'.mat'));
+        save(statsFile,'stats');
         figHandles = findobj('Type','figure');
         % now that we have multiple figures (ie. the gui) we need to loop
         % through all the figure handles, find the one that is that stats fig,
         % and save it to the current directory.
         for i = 1:size(figHandles,1)
             if strcmpi('Stats Figure',figHandles(i).Name)
-                savefig(figHandles(i),'stats.fig');
+                statsFigFile = fullfile(saveFolderName, 'stats.fig');
+                savefig(figHandles(i), statsFigFile);
             end
         end
        %properly formats the parameters and saves them in the same format as
@@ -612,12 +615,12 @@ function triplePortCleanup()
         parameters = strcat(info.mouseName,'_parameters');
         baseName = [parameters, '_', int2str(yyyymmdd(datetime)), '_'];
         fileCounter = 1;
-        fName = [baseName, int2str(fileCounter), '.mat'];
-        while (exist(fName, 'file'))
+        paramFileName = fullfile(saveFolderName, [baseName, int2str(fileCounter), '.mat']);
+        while (exist(paramFileName, 'file'))
             fileCounter = fileCounter + 1;
-            fName = [baseName, int2str(fileCounter), '.mat'];
+            paramFileName = fullfile(saveFolderName, [baseName, int2str(fileCounter), '.mat']);
         end
-        save(fName,'p');
+        save(paramFileName,'p');
     end
     close 'Stats Figure'
 end
