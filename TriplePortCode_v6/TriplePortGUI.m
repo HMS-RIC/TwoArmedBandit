@@ -593,7 +593,13 @@ function connectToArduino_Callback(hObject, eventdata, handles)
 
 global info calib
 info = struct;
-info.folderName = pwd;
+info.folderName = get(handles.folderPath,'String');
+if strcmp(info.folderName,'Default Folder Path') || strcmp(info.folderName,'0')
+    ready = false;
+    errordlg('Must input the directory in which the session"s data will be saved', 'INPUTS REQUIRED')
+    return
+end
+
 setupLogging('calibration_log');
 
 global arduinoConn
