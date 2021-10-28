@@ -156,9 +156,14 @@ void NosePort::update() {
           digitalWrite(_laserPin, HIGH);
           _laserOn = true;          
         } else if ((stimTime >= pulseStartTime_us + _laserPulseDur_us) && (_laserOn)) {
-          digitalWrite(_laserPin, LOW);
-          _laserOn = false;
+          // We're at end of current pulse.
+          // Compute next pulse start time:
           pulseStartTime_us += _laserPulsePeriod_us;
+          // Turn off laser unless next pulse starts now (i.e., if pulseDur==pulsePeriod)
+          if (stimTime < pulseStartTime_us){
+            digitalWrite(_laserPin, LOW);
+            _laserOn = false;
+          }
         }
       }
     }
