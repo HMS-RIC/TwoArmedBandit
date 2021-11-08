@@ -272,6 +272,7 @@ function newTrialState = stateTransitionEvent(eventName)
     % state that only need to be performed once, at the start of the
     % state (e.g., turning LEDs on/off).
     global centerPort leftPort rightPort
+    global activateLeft activateRight
     switch newTrialState
         case ''
             % didn't switch states; do nothing
@@ -412,11 +413,24 @@ function updatePokeStats(pokeSide, pokeType)
     global sync_counter sync_frame
     sync_frame = sync_counter;
 
-    pokeCount = pokeCount+1; %increment pokeCount
+    % pokeCount: value should be correct. It is incremented in noseIn()
     pokeHistory(pokeCount).timeStamp = now;
     timeSinceLastPoke = etime(clock, lastPokeTime);
     %update the lastPokeTime
     lastPokeTime = clock;
+
+    % Update pokeHistory and initiate appropriate state transition
+    pokeHistory(pokeCount).timeStamp = now;
+    switch pokeSide
+        case 'rightPoke'
+            pokeHistory(pokeCount).portPoked = 'rightPort';
+        case 'leftPoke'
+            pokeHistory(pokeCount).portPoked = 'leftPort';
+        case 'centerPoke'
+            pokeHistory(pokeCount).portPoked = 'centerPort';
+        otherwise
+            warning('Unexpected pokeSide')
+    end
 
     pokeHistory(pokeCount).isTRIAL = pokeType;
     % isTRIAL == 0 means that the poke is 'incorrect' and not a trial
@@ -432,19 +446,6 @@ function updatePokeStats(pokeSide, pokeType)
         pokeHistory(pokeCount).rightPortStats.ACTIVATE = activateRight;
         pokeHistory(pokeCount).sideLaserState = side_laser_state;
         pokeHistory(pokeCount).centerLaserState = center_laser_state;
-    end
-
-    % Update pokeHistory and initiate appropriate state transition
-    pokeHistory(pokeCount).timeStamp = now;
-    switch pokeSide
-        case 'rightPoke'
-            pokeHistory(pokeCount).portPoked = 'rightPort';
-        case 'leftPoke'
-            pokeHistory(pokeCount).portPoked = 'leftPort';
-        case 'centerPoke'
-            pokeHistory(pokeCount).portPoked = 'centerPort';
-        otherwise
-            warning('Unexpected pokeSide')
     end
 
     %in order to run update stats, we need a value for pokeHistory.REWARD
