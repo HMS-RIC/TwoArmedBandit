@@ -11,6 +11,9 @@ function runTriplePortExperiment_laser_state(varargin)
     global arduinoMessageString
     global p % parameter structure
     global info % structure containing mouse name and folder to be saved in
+    global manualRewardTriggered manualRewardCount
+    manualRewardTriggered = false;
+    manualRewardCount = 0;
 
     % % Hard code laser stimulus profile for now
     % p.laserDelay = 0; % in ms
@@ -448,10 +451,15 @@ function updatePokeStats(pokeSide, pokeType)
         pokeHistory(pokeCount).centerLaserState = center_laser_state;
     end
 
-    %in order to run update stats, we need a value for pokeHistory.REWARD
+    % in order to run update stats, we need a value for pokeHistory.REWARD
     pokeHistory(pokeCount).REWARD = 0; % this might be overwritten if reward happens
 
-    %update stats and refresh figures
+    % how many manual rewards were delivered prior to this poke?
+    global manualRewardCount
+    pokeHistory(pokeCount).manualRewards = manualRewardCount;
+    manualRewardCount = 0;
+
+    % update stats and refresh figures
     stats = updatestats(stats,pokeHistory(pokeCount),pokeCount,sync_frame);
     global handlesCopy
     leftRewards = sum(stats.rewards.left);
@@ -479,19 +487,21 @@ function rewardFunc(portID)
     global h
     global currBlockReward
 
-    % TODO: Distinguish between mouse-elicited rewards (true rewards)
-    %       and "bonus" rewards manually delivered by experimenter
-    %
-    % For now, fix simple issue: when experimenter triggers a reward
-    % when poke count is 0:
+    % 1) Check for manually triggered reward
+    global manualRewardTriggered manualRewardCount
+    if manualRewardTriggered
+        manualRewardTriggered = false;
+        manualRewardCount = manualRewardCount + 1;
+        return
+    end
     if (pokeCount == 0)
+        % should never get here (unless a manual rewrd isn't caught above)
+        warning('Reward delivered before first poke.');
         return;
     end
 
-    % IF Manual Reward:
-    %   log someting???
-    % ELSE:
-
+    % 2) If this is a mouse-generate reward (a true reward), then
+    % attribute it to current poke and log it.
     currBlockReward = currBlockReward + 1;
     display(currBlockReward)
 
@@ -499,7 +509,6 @@ function rewardFunc(portID)
     pokeHistory(pokeCount).REWARD = 1;
 
     %update stats and refresh figures
-    % stats = updatestats(stats,pokeHistory(pokeCount),pokeCount,sync_frame);
     if poke.isTRIAL ~= 2
         % confirm that isTRIAL type is 2
         warning('Rewarded trial is not a decision trial.')

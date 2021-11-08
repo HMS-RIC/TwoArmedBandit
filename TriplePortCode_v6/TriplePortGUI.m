@@ -792,8 +792,12 @@ function rightRewardButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     global rightPort
-    rightPort.deliverReward();
-
+    global manualRewardTriggered
+    if ~manualRewardTriggered
+        manualRewardTriggered = true;
+        logEvent('Manual reward Right');
+        rightPort.deliverReward();
+    end
 
 % --- Executes on button press in leftRewardButton.
 function leftRewardButton_Callback(hObject, eventdata, handles)
@@ -801,8 +805,12 @@ function leftRewardButton_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     global leftPort
-    leftPort.deliverReward();
-
+    global manualRewardTriggered
+    if ~manualRewardTriggered
+        manualRewardTriggered = true;
+        logEvent('Manual reward Left');
+        leftPort.deliverReward();
+    end
 
 function laserDelay_Callback(hObject, eventdata, handles)
 % hObject    handle to laserDelay (see GCBO)

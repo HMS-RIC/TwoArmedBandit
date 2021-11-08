@@ -11,6 +11,7 @@ Overlapping laser stimuli interact in unexpected ways.
 
 How to distinguish between mouse-elicited rewards (true rewards)
 and "bonus" rewards manually delivered by experimenter
+- Fixed... needs testing
 
 To Do:
 - **** Add "deliver extra reward button" (during experiment)
@@ -18,10 +19,21 @@ To Do:
 - Stop expt button: turn off all LEDs/Laser/reward
 	- Done ?
 - Have Max-duration timeout for variable laser stim
+	- Done
 - Add new laser stim type: center-in -> side-out
-
+	-- STILL TO DO...
 
 After trial is initiated, does centerPoke count as "decision" "incorrect" poke? Transition to ITI??
 -Yes
 
 Need for Markov option? -NO
+
+
+================================
+
+# Errors in stats/history file format:
+- every other poke is blank - FIXED
+- 'L/R PortStatus' is missing ACTIVATE value - FIXED
+- New stats file has empty 'sync_times' field, this is missing in old version
+	- this actually seems right
+
