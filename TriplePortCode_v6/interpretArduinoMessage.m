@@ -47,6 +47,10 @@ switch messageType
         % Laser stim ended
         logValue('Laser off', portNum);
         AllNosePorts{portNum}.laserOff();
+    case 'T'
+        % Laser stim timeout
+        logValue('Laser timeout', portNum);
+        warning('Laser timeout. Make sure "Max laser stim duration" is set appropriately.');
 
 
     case '#'

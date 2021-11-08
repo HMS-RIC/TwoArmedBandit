@@ -145,11 +145,14 @@ void NosePort::update() {
     if (stimTime > _laserStimDelay_us ) {
       // if we are past the delay, compute time since delay ended (i.e., time into pulsing)
       stimTime = stimTime - _laserStimDelay_us;
-      if ( (_laserStimEndTrigType == LASER_END_TRIG_TIME) &&
-           (stimTime >= _laserStimDur_us)) {
-        // if this is a timed laser stim and
+      if (stimTime >= _laserStimDur_us) {
         // if _laserStimDur is exceeded then end the stim
+        // NOTE: For fixed-duration laser stim, _laserStimDur is the specified duration
+        //       For variable-duration stim, _laserStimDur is the max duration timeout
         endLaserStim();
+        if (_laserStimEndTrigType != LASER_END_TRIG_TIME) {
+          logToUSB('T');
+        }
       } else {
         // otherwise, turn laser on/off based on pulse parameters:
         if ((stimTime >= pulseStartTime_us) && (!_laserOn)) {

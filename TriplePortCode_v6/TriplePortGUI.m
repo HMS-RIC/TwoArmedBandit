@@ -737,7 +737,12 @@ function sideLaserStimEndTrig_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns sideLaserStimEndTrig contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from sideLaserStimEndTrig
-
+value = get(hObject,'Value');
+if value == 1
+    set(handles.SideDurationLabel, 'String', 'Duration (ms):');
+else
+    set(handles.SideDurationLabel, 'String', 'Max Dur. (ms):');
+end
 
 % --- Executes during object creation, after setting all properties.
 function sideLaserStimEndTrig_CreateFcn(hObject, eventdata, handles)
@@ -760,6 +765,12 @@ function centerLaserStimEndTrig_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns centerLaserStimEndTrig contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from centerLaserStimEndTrig
+value = get(hObject,'Value');
+if value == 1
+    set(handles.CenterDurationLabel, 'String', 'Duration (ms):');
+else
+    set(handles.CenterDurationLabel, 'String', 'Max Dur. (ms):');
+end
 
 
 % --- Executes during object creation, after setting all properties.
