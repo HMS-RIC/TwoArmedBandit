@@ -359,10 +359,6 @@ end
 
 function deactivateSidePorts()
     disp('deactivateSidePorts')
-    global rightPort leftPort deactivateTimer
-    try
-        stop(deactivateTimer)
-    end
     rightPort.deactivate();
     leftPort.deactivate();
 end
