@@ -488,13 +488,28 @@ function rewardFunc(portID)
         return;
     end
 
+    % IF Manual Reward:
+    %   log someting???
+    % ELSE:
+
     currBlockReward = currBlockReward + 1;
     display(currBlockReward)
 
     % log rewarded port to poke history
     pokeHistory(pokeCount).REWARD = 1;
+
     %update stats and refresh figures
-    stats = updatestats(stats,pokeHistory(pokeCount),pokeCount,sync_frame);
+    % stats = updatestats(stats,pokeHistory(pokeCount),pokeCount,sync_frame);
+    if poke.isTRIAL ~= 2
+        % confirm that isTRIAL type is 2
+        warning('Rewarded trial is not a decision trial.')
+    end
+    poke = pokeHistory(pokeCount);
+    if strcmpi(poke.portPoked,'leftPort')
+        stats.rewards.left(pokeCount) = 1;
+    elseif strcmpi(poke.portPoked,'rightPort')
+        stats.rewards.right(pokeCount) = 1;
+    end
     cumstats = cumsumstats(stats);
     updatestatsfig(cumstats,h,pokeCount);
     reupdateRewardProbabilities();

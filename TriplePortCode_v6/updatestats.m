@@ -11,6 +11,11 @@ stats.sync_frame(pokeCount) = syncFrame;
 %stats.time
 stats.times(pokeCount) = now;
 
+
+% isTRIAL == 0 means that the poke is 'incorrect' and not a trial
+% isTRIAL == 1 means that centerPort has correctly initiated trial
+% isTRIAL == 2 means that the poke is a decision poke
+
 %stats.trials
 if poke.isTRIAL == 2
     %if is.TRIAL == 2 then no error has been made only if pressed in center:
@@ -25,22 +30,20 @@ if poke.isTRIAL == 2
         stats.trials.right(pokeCount) = 2;
         stats.trials.left(pokeCount) = 0;
     elseif strcmpi(poke.portPoked,'centerPort')
+        % should never get here.
         stats.trials.left(pokeCount) = 0;
         stats.trials.right(pokeCount) = 0;
         stats.errors.center = 1;
     end
     %and finally determine if there was a reward:
+    stats.rewards.left(pokeCount) = 0;
+    stats.rewards.right(pokeCount) = 0;
     if poke.REWARD == 1
         if strcmpi(poke.portPoked,'leftPort')
             stats.rewards.left(pokeCount) = 1;
-            stats.rewards.right(pokeCount) = 0;
         elseif strcmpi(poke.portPoked,'rightPort')
             stats.rewards.right(pokeCount) = 1;
-            stats.rewards.left(pokeCount) = 0;
         end
-    else
-        stats.rewards.left(pokeCount) = 0;
-        stats.rewards.right(pokeCount) = 0;
     end
 
 %stats.errors
