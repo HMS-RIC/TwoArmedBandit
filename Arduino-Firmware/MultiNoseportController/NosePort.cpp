@@ -245,9 +245,6 @@ void NosePort::setLaserActive(bool activated) {
     }
   } else {
     _laserActivated = false;
-    if (_duringLaserStim) {
-      endLaserStim();
-    }
   }
 }
 
