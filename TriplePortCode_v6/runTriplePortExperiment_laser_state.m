@@ -449,6 +449,7 @@ function updatePokeStats(pokeSide, pokeType)
         pokeHistory(pokeCount).leftPortStats.ACTIVATE = activateLeft;
         pokeHistory(pokeCount).rightPortStats.ACTIVATE = activateRight;
         pokeHistory(pokeCount).sideLaserState = side_laser_state;
+    elseif (pokeType == 1)
         pokeHistory(pokeCount).centerLaserState = center_laser_state;
     end
 
