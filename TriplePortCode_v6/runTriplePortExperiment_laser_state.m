@@ -521,6 +521,24 @@ function rewardFunc(portID)
     elseif strcmpi(poke.portPoked,'rightPort')
         stats.rewards.right(pokeCount) = 1;
     end
+
+    leftRewards = sum(stats.rewards.left);
+    rightRewards = sum(stats.rewards.right);
+    totalRewards = leftRewards + rightRewards;
+    leftTrials = sum(stats.trials.left)/2;
+    rightTrials = sum(stats.trials.right)/2;
+    totalTrials = leftTrials + rightTrials;
+    global numBlocks
+    leftBlocks = numBlocks.left;
+    rightBlocks = numBlocks.right;
+    totalBlocks = leftBlocks+rightBlocks;
+    data = [leftRewards, rightRewards, totalRewards; leftTrials, rightTrials, ...
+        totalTrials;leftBlocks,rightBlocks,totalBlocks];
+    global handlesCopy
+    set(handlesCopy.statsTable,'data',data);
+    cumstats = cumsumstats(stats);
+    updatestatsfig(cumstats,h,pokeCount);
+
     cumstats = cumsumstats(stats);
     updatestatsfig(cumstats,h,pokeCount);
     reupdateRewardProbabilities();
