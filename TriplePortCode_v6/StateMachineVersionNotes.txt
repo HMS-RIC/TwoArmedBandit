@@ -37,3 +37,12 @@ Need for Markov option? -NO
 - New stats file has empty 'sync_times' field, this is missing in old version
 	- this actually seems right
 
+=============
+
+Manual Reward delivery:
+- add log message 'Manual reward left/right'
+- standard 'Reward delivered' message should also appear in log soon after
+- Manual rewards do not show up in existing reward statistics
+- But there is new field, pokeHistory(pokeCount).manualRewards, that lists the # of manual rewards triggered prior to that poke
+	- the assumption is that manual rewards are triggered in between pokes. Is that true???
+

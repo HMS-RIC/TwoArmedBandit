@@ -510,11 +510,11 @@ function rewardFunc(portID)
     pokeHistory(pokeCount).REWARD = 1;
 
     %update stats and refresh figures
+    poke = pokeHistory(pokeCount);
     if poke.isTRIAL ~= 2
         % confirm that isTRIAL type is 2
         warning('Rewarded trial is not a decision trial.')
     end
-    poke = pokeHistory(pokeCount);
     if strcmpi(poke.portPoked,'leftPort')
         stats.rewards.left(pokeCount) = 1;
     elseif strcmpi(poke.portPoked,'rightPort')
