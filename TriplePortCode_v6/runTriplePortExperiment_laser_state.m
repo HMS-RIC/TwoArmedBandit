@@ -362,6 +362,7 @@ function activateSidePorts(activateLeft, activateRight)
 end
 
 function deactivateSidePorts()
+    global rightPort leftPort
     disp('deactivateSidePorts')
     rightPort.deactivate();
     leftPort.deactivate();
