@@ -5,10 +5,14 @@ function logValue(valName, value)
         value = num2str(value);
     end
     fprintf(logFileID, '%s, %s, %s\n', timestamp , valName, value); 
+
     % DEBUGGING:
-    if value
-        disp([valName,': ', value])
-    else
-        disp(valName)
+    global printLogToCommandLine
+    if printLogToCommandLine
+        if value
+            disp([valName,': ', value])
+        else
+            disp(valName)
+        end
     end
 end
