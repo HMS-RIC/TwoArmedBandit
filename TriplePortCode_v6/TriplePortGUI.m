@@ -22,7 +22,7 @@ function varargout = TriplePortGUI(varargin)
 
 % Edit the above text to modify the response to help TriplePortGUI
 
-% Last Modified by GUIDE v2.5 15-Oct-2021 14:56:28
+% Last Modified by GUIDE v2.5 16-Dec-2021 10:06:12
 
 % Begin initialization code - DO NOT EDIT
 %NOTE: THE ONLY REAL CHANGE IS IN THE LAST FUNCTION... THE BUTTON PUSHED
@@ -317,6 +317,7 @@ p.blockRangeMax = str2double(get(handles.blockRangeMax, 'String'));
 p.sideLaserStimProb = str2double(get(handles.sideLaserStimProb, 'String'));
 p.sideLaserStimDuration = str2double(get(handles.sideLaserStimDuration, 'String'));
 p.sideLaserStimEndTrig = get(handles.sideLaserStimEndTrig, 'Value');
+p.sideLaserFollowsCenter = get(handles.sideLaserFollowsCenter, 'Value');
 p.centerLaserStimProb = str2double(get(handles.centerLaserStimProb, 'String'));
 p.centerLaserStimDuration = str2double(get(handles.centerLaserStimDuration, 'String'));
 p.centerLaserStimEndTrig = get(handles.centerLaserStimEndTrig, 'Value');
@@ -357,6 +358,7 @@ if ready
     set(handles.sideLaserStimProb, 'enable', 'off');
     set(handles.sideLaserStimDuration, 'enable', 'off');
     set(handles.sideLaserStimEndTrig, 'enable', 'off');
+    set(handles.sideLaserFollowsCenter, 'enable', 'off');
     set(handles.centerLaserStimProb, 'enable', 'off');
     set(handles.centerLaserStimDuration, 'enable', 'off');
     set(handles.centerLaserStimEndTrig, 'enable', 'off');
@@ -457,9 +459,14 @@ set(handles.rewardDurationLeft, 'enable', 'on');
 set(handles.minInterTrialInterval, 'enable', 'on');
 set(handles.blockRangeMin, 'enable', 'on');
 set(handles.blockRangeMax, 'enable', 'on');
-set(handles.sideLaserStimProb, 'enable', 'on');
+if get(handles.sideLaserFollowsCenter, 'Value')
+    set(handles.sideLaserStimProb, 'enable', 'off');
+else
+    set(handles.sideLaserStimProb, 'enable', 'on');
+end
 set(handles.sideLaserStimDuration, 'enable', 'on');
 set(handles.sideLaserStimEndTrig, 'enable', 'on');
+set(handles.sideLaserFollowsCenter, 'enable', 'on');
 set(handles.centerLaserStimProb, 'enable', 'on');
 set(handles.centerLaserStimDuration, 'enable', 'on');
 set(handles.centerLaserStimEndTrig, 'enable', 'on');
@@ -878,3 +885,18 @@ function laserPulseDuration_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in sideLaserFollowsCenter.
+function sideLaserFollowsCenter_Callback(hObject, eventdata, handles)
+% hObject    handle to sideLaserFollowsCenter (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of sideLaserFollowsCenter
+if get(hObject,'Value')
+    set(handles.sideLaserStimProb, 'enable', 'off');
+else
+    set(handles.sideLaserStimProb, 'enable', 'on');
+end
+

@@ -311,8 +311,7 @@ function newTrialState = stateTransitionEvent(eventName)
     % Here is where we perform all initialization actions for a new
     % state that only need to be performed once, at the start of the
     % state (e.g., turning LEDs on/off).
-    global centerPort leftPort rightPort
-    global activateLeft activateRight
+    global activateLeft activateRight center_laser_state
     switch newTrialState
         case ''
             % didn't switch states; do nothing
@@ -337,11 +336,17 @@ function newTrialState = stateTransitionEvent(eventName)
             centerPort.ledOff();
             leftPort.ledOn();
             rightPort.ledOn();
-            deactivateCenterLaserStim();
+            % set up rewards
             activateLeft = (rand <= p.leftRewardProb); % activate left port with prob = p.leftRewardProb
             activateRight = (rand <= p.rightRewardProb); % activate right port with prob = p.rightRewardProb
             activateSidePorts(activateLeft, activateRight);
-            activateSideLaserStimWithProb(p.sideLaserStimProb);
+            % set up laser
+            if (p.sideLaserFollowsCenter)
+                activateSideLaserStimWithProb(center_laser_state); % center_laser_state is {0, 1}
+            else
+                activateSideLaserStimWithProb(p.sideLaserStimProb);
+            end
+            deactivateCenterLaserStim();
 
         otherwise
             warning('Unexpected state.')
