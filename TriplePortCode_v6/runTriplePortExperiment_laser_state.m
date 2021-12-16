@@ -300,6 +300,23 @@ function newTrialState = stateTransitionEvent(eventName)
             warning('Unexpected state.')
     end
 
+    % was laser active?
+    global centerPort leftPort rightPort
+    switch eventName
+        case 'centerPoke'
+            if centerPort.laserActive
+                fprintf(' * Center Laser\n');
+            end
+        case 'leftPoke'
+            if leftPort.laserActive
+                fprintf(' * Side Laser\n');
+            end
+        case 'rightPoke'
+            if rightPort.laserActive
+                fprintf(' * Side Laser\n');
+            end
+    end
+
     % 2) State Transition (if needed)
     if ~strcmp(newTrialState,'')
         % DEBUG:
