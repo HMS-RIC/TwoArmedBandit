@@ -252,6 +252,7 @@ function newTrialState = stateTransitionEvent(eventName)
                         newTrialState = 'START';
                     else
                         newTrialState = 'REWARD_WINDOW';
+                        fprintf('\n\n***  Trial %i Initiated  ***\n', currTrialNum);
                     end
             end
 
