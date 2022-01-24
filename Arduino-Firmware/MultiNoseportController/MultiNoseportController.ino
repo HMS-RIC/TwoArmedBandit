@@ -47,11 +47,15 @@ void readFromUSB() {
   // read from USB, if available
   static String usbMessage = ""; // initialize usbMessage to empty string,
                                  // happens once at start of program
-  if (Serial.available() > 0) {
+
+  // Keep reading (and interpreting) messages until available bytes is 0.
+  // If multiple messages come in at once (e.g., on a single line separated by ';'s),
+  // we should execute them all in one "atomic" step.
+  while (Serial.available() > 0) {
     // read next char if available
     char inByte = Serial.read();
-    if (inByte == '\n') {
-      // the new-line character ('\n') indicates a complete message
+    if ((inByte == '\n') || (inByte == ';')) {
+      // the new-line character ('\n') or ';' indicates a complete message
       // so interprete the message and then clear buffer
       NosePort::interpretCommand(usbMessage);
       usbMessage = ""; // clear message buffer
