@@ -159,9 +159,8 @@ function runTriplePortExperiment_laser_state(varargin)
     lastPokeTime = clock;
 
     %create stats structure for online analysis and visualization
-    global stats printStatsFlag currTrialNum
+    global stats currTrialNum
     currTrialNum = 1;
-    printStatsFlag = false;
     % initialize the first entry of stats to be zeros
     stats = initializestats();
     cumstats = cumsumstats(stats);
@@ -206,11 +205,6 @@ function runTriplePortExperiment_laser_state(varargin)
                 (etime(clock, lastPokeTime) >= rewardWin) )
             stateTransitionEvent('rewardTimeout');
         end
-        % print stats after decision pokes (once reward is delivered)
-        if (printStatsFlag)
-            printStats();
-            printStatsFlag = false;
-        end
     end
 
 end % runTriplePortExperiment
@@ -220,7 +214,7 @@ end % runTriplePortExperiment
 %% stateTransitionEvent: transitions between states of the state machine
 function newTrialState = stateTransitionEvent(eventName)
     global TrialState p
-    global portRewardState printStatsFlag
+    global portRewardState
     global currTrialNum
 
     newTrialState = '';
@@ -283,7 +277,6 @@ function newTrialState = stateTransitionEvent(eventName)
                 case {'leftPoke', 'rightPoke', 'leftPokeRewarded', 'rightPokeRewarded'}
                     logDecisionPoke(eventName);
                     newTrialState = 'ITI';
-                    printStatsFlag = true;
                     if (strcmp(eventName, 'leftPokeRewarded') || (strcmp(eventName, 'rightPokeRewarded')))
                         fprintf('***  Decision Poke — %s  - REWARDED Trial ***\n', eventName);
                     else
@@ -573,6 +566,11 @@ function updatePokeStats(pokeSide, pokeType)
 
     if strcmp(pokeSide, 'rightPokeRewarded') || strcmp(pokeSide, 'leftPokeRewarded')
         reupdateRewardProbabilities();
+    end
+
+    % Print stats after every decision poke
+    if (pokeType == 2)
+        printStats();
     end
 end
 
