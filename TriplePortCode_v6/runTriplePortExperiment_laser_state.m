@@ -517,8 +517,6 @@ function updatePokeStats(pokeSide, pokeType)
     % isTRIAL == 1 means that centerPort has correctly initiated trial
     % isTRIAL == 2 means that the poke is a decision poke
 
-
-    % determine value for isTrial based on current TrialState
     if (pokeType == 2)
         pokeHistory(pokeCount).trialTime = timeSinceLastPoke;
         pokeHistory(pokeCount).leftPortStats.prob = p.leftRewardProb;
