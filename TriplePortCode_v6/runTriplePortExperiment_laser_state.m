@@ -641,6 +641,17 @@ function initializeRewardProbabilities()
 
 end
 
+%% Arduino batch message helper functions
+function startArduinoBatchMessage()
+    global arduinoConn
+    arduinoConn.startBatchMessage();
+end
+
+function sendArduinoBatchMessage()
+    global arduinoConn
+    arduinoConn.sendBatchMessage();
+end
+
 
 %% Cleanup
 % Cleanup function is run when program ends (either naturally or after ctl-c)

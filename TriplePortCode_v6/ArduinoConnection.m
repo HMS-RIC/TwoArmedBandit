@@ -4,8 +4,9 @@ classdef ArduinoConnection < handle
 properties
 	debugMode = false;
 	connected = false;
+	batchMode = false;
 	serialConnection = [];
-	arduinoMessageString = '';
+	batchMessageString = '';
 	messgeCallbackFcn = [];
 	handshakeCharacter = '^';
 end
@@ -13,7 +14,7 @@ end
 methods
 	function obj = ArduinoConnection(messgeCallbackFcn, baudRate)
 		obj.messgeCallbackFcn = messgeCallbackFcn;
-		obj.arduinoMessageString = '';
+		obj.batchMessageString = '';
 		arduinoPortName = obj.findFirstArduinoPort();
 
 		if isempty(arduinoPortName)
@@ -57,8 +58,21 @@ methods
 		fprintf('\n')
 	end
 
+	function startBatchMessage(obj)
+		batchMode = true;
+		obj.batchMessageString = '';
+	end
+
+	function sendBatchMessage(obj)
+		batchMode = false;
+		obj.writeString(obj.batchMessageString);
+		obj.batchMessageString = '';
+	end
+
 
 	function writeMessage(obj, messageChar, arg1, arg2)
+		% Will format the message and send to the Arduino
+		% Unless in batchMode: then it will append foramtted message to the batch message string
 		if (nargin == 2)
 		    stringToSend = sprintf('%s',messageChar);
 		elseif (nargin == 3)
@@ -66,7 +80,12 @@ methods
 		else
 		    stringToSend = sprintf('%s %d %d',messageChar, arg1, arg2);
 		end
-	    obj.writeString(stringToSend);
+
+		if batchMode
+			batchMessageString = sprintf('%s; %s', batchMessageString, stringToSend);
+		else
+		    obj.writeString(stringToSend);
+		end
 	end
 
 	function writeString(obj, stringToWrite)
@@ -80,8 +99,8 @@ methods
 
 	function readMessage(obj, port, event)
 		% read line from serial buffer
-	   	obj.arduinoMessageString = fgetl(obj.serialConnection);
-	   	%fprintf('#%s#\n',obj.arduinoMessageString);
+	   	receivedMessage = fgetl(obj.serialConnection);
+	   	%fprintf('#%s#\n',receivedMessage);
 	   	% fprintf('--> "');
 	   	% [tline,count,msg] = fgetl(obj.serialConnection);
 	   	% fprintf('%s" :: %d :: "%s" \n', tline,count,msg);
@@ -92,8 +111,8 @@ methods
 		end
 
 		% run user code to evaluate the message
-        %feval(obj.messgeCallbackFcn, obj.arduinoMessageString);
-        obj.messgeCallbackFcn(obj.arduinoMessageString);
+        %feval(obj.messgeCallbackFcn, receivedMessage);
+        obj.messgeCallbackFcn(receivedMessage);
 
 	end
 
