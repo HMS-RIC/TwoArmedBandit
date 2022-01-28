@@ -159,10 +159,8 @@ function runTriplePortExperiment_laser_state(varargin)
     lastPokeTime = clock;
 
     %create stats structure for online analysis and visualization
-    global stats printStatsFlag expectRewardFlag rewardFlagCount currTrialNum
+    global stats printStatsFlag currTrialNum
     currTrialNum = 1;
-    expectRewardFlag = false;
-    rewardFlagCount = 0;
     printStatsFlag = false;
     % initialize the first entry of stats to be zeros
     stats = initializestats();
@@ -208,17 +206,8 @@ function runTriplePortExperiment_laser_state(varargin)
                 (etime(clock, lastPokeTime) >= rewardWin) )
             stateTransitionEvent('rewardTimeout');
         end
-        % confirm that expected rewards are delivered
-        if expectRewardFlag
-            rewardFlagCount = rewardFlagCount + 1;
-            if (rewardFlagCount > 3)
-                warning 'Expected reward wasn''t delivered.'
-                expectRewardFlag = false;
-                rewardFlagCount = 0;
-            end
-        end
         % print stats after decision pokes (once reward is delivered)
-        if (printStatsFlag && ~expectRewardFlag)
+        if (printStatsFlag)
             printStats();
             printStatsFlag = false;
         end
@@ -231,7 +220,7 @@ end % runTriplePortExperiment
 %% stateTransitionEvent: transitions between states of the state machine
 function newTrialState = stateTransitionEvent(eventName)
     global TrialState p
-    global portRewardState expectRewardFlag printStatsFlag
+    global portRewardState printStatsFlag
     global currTrialNum
 
     newTrialState = '';
@@ -297,7 +286,6 @@ function newTrialState = stateTransitionEvent(eventName)
                     printStatsFlag = true;
                     if (strcmp(eventName, 'leftPokeRewarded') || (strcmp(eventName, 'rightPokeRewarded')))
                         fprintf('***  Decision Poke — %s  - REWARDED Trial ***\n', eventName);
-                        expectRewardFlag = true;
                     else
                         fprintf('***  Decision Poke — %s  - UNREWARDED Trial ***\n', eventName);
                     end
