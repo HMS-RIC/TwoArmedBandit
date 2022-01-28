@@ -22,28 +22,27 @@ if poke.isTRIAL == 2
     stats.errors.right(pokeCount) = 0;
     stats.errors.left(pokeCount) = 0;
     stats.errors.center(pokeCount) = 0;
-    %now correctly ascribe the trial:
-    if strcmpi(poke.portPoked,'leftPort')
-        stats.trials.left(pokeCount) = 2;
-        stats.trials.right(pokeCount) = 0;
-    elseif strcmpi(poke.portPoked,'rightPort')
-        stats.trials.right(pokeCount) = 2;
-        stats.trials.left(pokeCount) = 0;
-    elseif strcmpi(poke.portPoked,'centerPort')
-        % should never get here.
-        stats.trials.left(pokeCount) = 0;
-        stats.trials.right(pokeCount) = 0;
-        stats.errors.center = 1;
-    end
-    %and finally determine if there was a reward:
     stats.rewards.left(pokeCount) = 0;
     stats.rewards.right(pokeCount) = 0;
-    if poke.REWARD == 1
-        if strcmpi(poke.portPoked,'leftPort')
-            stats.rewards.left(pokeCount) = 1;
-        elseif strcmpi(poke.portPoked,'rightPort')
-            stats.rewards.right(pokeCount) = 1;
-        end
+    %now correctly ascribe the trial:
+    switch poke.portPoked
+        case {'leftPort', 'leftPortRewarded'}
+            stats.trials.left(pokeCount) = 2;
+            stats.trials.right(pokeCount) = 0;
+            if poke.REWARD == 1
+                stats.rewards.left(pokeCount) = 1;
+            end
+        case {'rightPort', 'rightPortRewarded'}
+            stats.trials.right(pokeCount) = 2;
+            stats.trials.left(pokeCount) = 0;
+            if poke.REWARD == 1
+                stats.rewards.right(pokeCount) = 1;
+            end
+        case 'centerPort'
+            % should never get here.
+            stats.trials.left(pokeCount) = 0;
+            stats.trials.right(pokeCount) = 0;
+            stats.errors.center = 1;
     end
 
 %stats.errors

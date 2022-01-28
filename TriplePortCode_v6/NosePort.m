@@ -64,14 +64,19 @@ classdef NosePort  < handle
                 feval(obj.noseInFunc, obj.portID);
             end
         end
+        function rewardedNoseIn(obj)
+            if isa(obj.rewardedNoseInFunc,'function_handle')
+                feval(obj.rewardedNoseInFunc, obj.portID);
+            end
+        end
         function noseOut(obj)
             if isa(obj.noseOutFunc,'function_handle')
                 feval(obj.noseOutFunc);
             end
         end
-        function reward(obj)
-            if isa(obj.rewardFunc,'function_handle')
-                feval(obj.rewardFunc,obj.portID);
+        function manualReward(obj)
+            if isa(obj.manualRewardFunc,'function_handle')
+                feval(obj.manualRewardFunc,obj.portID);
             end
         end
 

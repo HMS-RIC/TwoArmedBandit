@@ -81,8 +81,9 @@ function runTriplePortExperiment_laser_state(varargin)
     rightPort.setLaserPin(12);
     rightPort.setRewardDuration(p.rewardDurationRight);
     rightPort.setToSingleRewardMode();
-    rightPort.rewardFunc = @rewardFunc;
+    rightPort.manualRewardFunc = @manualRewardFunc;
     rightPort.noseInFunc = @noseIn;
+    rightPort.rewardedNoseInFunc = @rewardedNoseIn;
     logValue('right port ID', rightPort.portID);
 
     leftPort = NosePort(6,3);
@@ -90,8 +91,9 @@ function runTriplePortExperiment_laser_state(varargin)
     leftPort.setLaserPin(12);
     leftPort.setRewardDuration(p.rewardDurationLeft);
     leftPort.setToSingleRewardMode();
-    leftPort.rewardFunc = @rewardFunc;
+    leftPort.manualRewardFunc = @manualRewardFunc;
     leftPort.noseInFunc = @noseIn;
+    leftPort.rewardedNoseInFunc = @rewardedNoseIn;
     logValue('left port ID', leftPort.portID);
 
     %% Laser stim parameters:
@@ -244,9 +246,11 @@ function newTrialState = stateTransitionEvent(eventName)
             %     transition stright to REWARD_WINDOW
             switch eventName
                 case {'centerPoke', 'leftPoke', 'rightPoke'}
-                     logIncorrectPoke(eventName);
-                     fprintf(' *  Poke Between Trials — %s \n', eventName);
-
+                    logIncorrectPoke(eventName);
+                    fprintf(' *  Poke Between Trials — %s \n', eventName);
+                case {'leftPokeRewarded', 'rightPokeRewarded'}
+                    logIncorrectPoke(eventName);
+                    warning ('Unexpected rewarded poke during ITI.')
                 case 'itiTimeout'
                     if (p.centerPokeTrigger)
                         newTrialState = 'START';
@@ -269,6 +273,9 @@ function newTrialState = stateTransitionEvent(eventName)
                     logIncorrectPoke(eventName);
                     newTrialState = 'ITI';
                     fprintf(' *  Side Poke — %s \n', eventName);
+                case {'leftPokeRewarded', 'rightPokeRewarded'}
+                    logIncorrectPoke(eventName);
+                    warning ('Unexpected rewarded poke during Start state.')
             end
 
         case 'REWARD_WINDOW'
@@ -284,12 +291,11 @@ function newTrialState = stateTransitionEvent(eventName)
                     logIncorrectPoke(eventName);
                     newTrialState = 'ITI';
                     fprintf('***  Center Poke — Trial ABORTED  ***\n');
-                case {'leftPoke', 'rightPoke'}
+                case {'leftPoke', 'rightPoke', 'leftPokeRewarded', 'rightPokeRewarded'}
                     logDecisionPoke(eventName);
                     newTrialState = 'ITI';
                     printStatsFlag = true;
-                    if ((strcmp(eventName, 'rightPoke') && (portRewardState(1))) || ...
-                        (strcmp(eventName, 'leftPoke') && (portRewardState(2))))
+                    if (strcmp(eventName, 'leftPokeRewarded') || (strcmp(eventName, 'rightPokeRewarded')))
                         fprintf('***  Decision Poke — %s  - REWARDED Trial ***\n', eventName);
                         expectRewardFlag = true;
                     else
@@ -426,11 +432,11 @@ end
 function deactivateSidePorts()
     global rightPort leftPort
     global portRewardState
-    portRewardState = [false false];
 
     % disp('deactivateSidePorts')
     rightPort.deactivate();
     leftPort.deactivate();
+    portRewardState = [false false];
 end
 
 %% Nose In Functions
@@ -442,6 +448,21 @@ function syncIn(portID)
     global sync_times
     sync_times(sync_counter) = now;
 end
+
+function rewardedNoseIn(portID)
+    global rightPort leftPort pokeCount
+
+    % Initiate appropriate state transition
+    pokeCount = pokeCount+1; %increment pokeCount
+    if portID == rightPort.portID
+        stateTransitionEvent('rightPokeRewarded');
+    elseif portID == leftPort.portID
+        stateTransitionEvent('leftPokeRewarded');
+    elseif portID == centerPort.portID
+        warning('Should never encounter Rewarded-Center-Poke.');
+    end
+end
+
 
 function noseIn(portID)
     global rightPort leftPort centerPort pokeCount
@@ -491,9 +512,9 @@ function updatePokeStats(pokeSide, pokeType)
     % Update pokeHistory and initiate appropriate state transition
     pokeHistory(pokeCount).timeStamp = now;
     switch pokeSide
-        case 'rightPoke'
+        case {'rightPoke', 'rightPokeRewarded'}
             pokeHistory(pokeCount).portPoked = 'rightPort';
-        case 'leftPoke'
+        case {'leftPoke', 'leftPokeRewarded'}
             pokeHistory(pokeCount).portPoked = 'leftPort';
         case 'centerPoke'
             pokeHistory(pokeCount).portPoked = 'centerPort';
@@ -505,6 +526,7 @@ function updatePokeStats(pokeSide, pokeType)
     % isTRIAL == 0 means that the poke is 'incorrect' and not a trial
     % isTRIAL == 1 means that centerPort has correctly initiated trial
     % isTRIAL == 2 means that the poke is a decision poke
+
 
     % determine value for isTrial based on current TrialState
     if (pokeType == 2)
@@ -519,8 +541,23 @@ function updatePokeStats(pokeSide, pokeType)
         pokeHistory(pokeCount).centerLaserState = center_laser_state;
     end
 
-    % in order to run update stats, we need a value for pokeHistory.REWARD
-    pokeHistory(pokeCount).REWARD = 0; % this will be overwritten if reward happens
+    % special actions for a REWARDED decision poke:
+    pokeHistory(pokeCount).REWARD = 0; % default is non-rewarded
+    if strcmp(pokeSide, 'rightPokeRewarded') || strcmp(pokeSide, 'leftPokeRewarded')
+        % If it *is* a rewarded poke:
+        % - log rewarded port to poke history
+        pokeHistory(pokeCount).REWARD = 1;
+        % - attribute it to current poke and log it.
+        currBlockReward = currBlockReward + 1;
+        fprintf('Current block reward count: %i \n', currBlockReward);
+
+        % Error checking:
+        % Rewards should only happen on decision pokes (pokeType 2).
+        % Should have already triggered warnings (elsewhere in code) if that's not the case.
+        if pokeType ~= 2
+            warning('Rewarded trial is not a decision trial.')
+        end
+    end
 
     % how many manual rewards were delivered prior to this poke?
     global manualRewardCount
@@ -546,11 +583,9 @@ function updatePokeStats(pokeSide, pokeType)
     cumstats = cumsumstats(stats);
     updatestatsfig(cumstats,h,pokeCount);
 
-    % if (pokeType == 2)
-    %     fprintf ('           L      R    Tot\n')
-    %     fprintf ('Trials:  %3i    %3i    %3i\n', leftTrials, rightTrials, totalTrials)
-    %     fprintf ('Rewards: %3i    %3i    %3i\n', leftRewards, rightRewards, totalRewards)
-    % end
+    if strcmp(pokeSide, 'rightPokeRewarded') || strcmp(pokeSide, 'leftPokeRewarded')
+        reupdateRewardProbabilities();
+    end
 end
 
 function printStats()
@@ -568,77 +603,8 @@ function printStats()
 end
 
 %% Reward Function
-function rewardFunc(portID)
-    % disp('rewardFunc')
-    global pokeHistory pokeCount stats sync_frame
-    global h
-    global currBlockReward
-
-    % 1) Check for manually triggered reward
-    global manualRewardTriggered manualRewardCount
-    global expectRewardFlag rewardFlagCount
-    if manualRewardTriggered
-        fprintf('***  Manual Reward Delivered  ***\n');
-        manualRewardTriggered = false;
-        manualRewardCount = manualRewardCount + 1;
-        return
-    else
-        expectRewardFlag = false;
-        rewardFlagCount = 0;
-        % No need to print this out. Should have already been detected as a Rewarded Decision Poke.
-        % fprintf('***  REWARD Delivered  ***\n');
-    end
-    if (pokeCount == 0)
-        % should never get here (unless a manual rewrd isn't caught above)
-        warning('Reward delivered before first poke.');
-        return;
-    end
-
-    % 2) If this is a mouse-generate reward (a true reward), then
-    % attribute it to current poke and log it.
-    currBlockReward = currBlockReward + 1;
-    % display(currBlockReward)
-    fprintf('Current block reward count: %i \n', currBlockReward);
-
-    % log rewarded port to poke history
-    pokeHistory(pokeCount).REWARD = 1;
-
-    %update stats and refresh figures
-    poke = pokeHistory(pokeCount);
-    if poke.isTRIAL ~= 2
-        % confirm that isTRIAL type is 2
-        warning('Rewarded trial is not a decision trial.')
-    end
-    if strcmpi(poke.portPoked,'leftPort')
-        stats.rewards.left(pokeCount) = 1;
-    elseif strcmpi(poke.portPoked,'rightPort')
-        stats.rewards.right(pokeCount) = 1;
-    end
-
-    leftRewards = sum(stats.rewards.left);
-    rightRewards = sum(stats.rewards.right);
-    totalRewards = leftRewards + rightRewards;
-    leftTrials = sum(stats.trials.left)/2;
-    rightTrials = sum(stats.trials.right)/2;
-    totalTrials = leftTrials + rightTrials;
-    global numBlocks
-    leftBlocks = numBlocks.left;
-    rightBlocks = numBlocks.right;
-    totalBlocks = leftBlocks+rightBlocks;
-    data = [leftRewards, rightRewards, totalRewards; leftTrials, rightTrials, ...
-        totalTrials;leftBlocks,rightBlocks,totalBlocks];
-    global handlesCopy
-    set(handlesCopy.statsTable,'data',data);
-    cumstats = cumsumstats(stats);
-    updatestatsfig(cumstats,h,pokeCount);
-
-    cumstats = cumsumstats(stats);
-    updatestatsfig(cumstats,h,pokeCount);
-
-    % fprintf (repmat('\b', 1, 27));
-    % fprintf ('Rewards: %3i    %3i    %3i\n', leftRewards, rightRewards, totalRewards)
-
-    reupdateRewardProbabilities();
+function manualRewardFunc(portID)
+    fprintf('***  Manual Reward Delivered  ***\n');
 end
 
 function reupdateRewardProbabilities()

@@ -73,10 +73,16 @@ void NosePort::noseIn() {
   //DEBUG(String("Nose In — nosePort ")+_nosePortNumber);
   DEBUG(String("Nose In - nosePort ")+_nosePortNumber);
   _noseIn = true;
-  // log noseIn
-  logToUSB('I');
-  if (_rewardActivated) {
-    deliverReward();
+  if ((_rewardActivated) && (_rewardDuration_us > 0)) {
+    // set timer; set pin high
+    _duringReward = true;
+    _rewardStartTime_us = micros();
+    digitalWrite(_solenoidPin, HIGH);
+    // log rewarded nose in
+    logToUSB('D');
+  } else {
+    // log unrewarded noseIn
+    logToUSB('I');
   }
   if (_singleReward) {
     setActivated(false);

@@ -23,10 +23,17 @@ switch messageType
         newPortID = portNum;
         logValue('New poke initialized',portNum);
     case 'I'
-        % Nose in
+        % Nose in (unrewarded)
         logValue('Nose in', portNum);
         noseIn = 1;
         AllNosePorts{portNum}.noseIn();
+        %lastPokeTime = clock;
+    case 'D'
+        % Rewarded Nose in (rewarded)
+        logValue('Nose in', portNum);
+        noseIn = 1;
+        logValue('Reward delivered', portNum);
+        AllNosePorts{portNum}.rewardedNoseIn();
         %lastPokeTime = clock;
     case 'O'
         % Nose out
@@ -34,9 +41,9 @@ switch messageType
         noseIn = 0;
         AllNosePorts{portNum}.noseOut();
     case 'R'
-        % Rewarded poke
-        logValue('Reward delivered', portNum);
-        AllNosePorts{portNum}.reward();
+        % Standalone reward
+        logValue('Manual Reward delivered', portNum);
+        AllNosePorts{portNum}.manualReward();
         %rewardArray = [rewardArray, 1];
 
     case 'L'
