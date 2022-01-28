@@ -322,22 +322,29 @@ function newTrialState = stateTransitionEvent(eventName)
             % didn't switch states; do nothing
 
         case 'ITI'
+            startArduinoBatchMessage();
             centerPort.ledOff();
             leftPort.ledOff();
             rightPort.ledOff();
             deactivateCenterLaserStim();
             deactivateSideLaserStim();
             deactivateSidePorts();
+            sendArduinoBatchMessage();  % All the above Arduino commands are sent out at once
+                                        % Will be executed "simultaneously" by the Ardunio
 
         case 'START'
+            startArduinoBatchMessage();
             centerPort.ledOn();
             leftPort.ledOff();
             rightPort.ledOff();
             activateCenterLaserStimWithProb(p.centerLaserStimProb);
             deactivateSideLaserStim();
             deactivateSidePorts();
+            sendArduinoBatchMessage();  % All the above Arduino commands are sent out at once
+                                        % Will be executed "simultaneously" by the Ardunio
 
         case 'REWARD_WINDOW'
+            startArduinoBatchMessage();
             centerPort.ledOff();
             leftPort.ledOn();
             rightPort.ledOn();
@@ -352,6 +359,8 @@ function newTrialState = stateTransitionEvent(eventName)
                 activateSideLaserStimWithProb(p.sideLaserStimProb);
             end
             deactivateCenterLaserStim();
+            sendArduinoBatchMessage();  % All the above Arduino commands are sent out at once
+                                        % Will be executed "simultaneously" by the Ardunio
 
         otherwise
             warning('Unexpected state.')
