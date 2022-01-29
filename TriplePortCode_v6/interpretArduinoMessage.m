@@ -16,8 +16,15 @@ end
 switch messageType
     case '^'
         % Arduino startup
-        arduinoConnection = 1;
-        logEvent('Arduino connection established');
+        if (arduinoConnection == 0)
+            arduinoConnection = 1;
+            logEvent('Arduino connection established');
+        else
+            global ArduinoSyncFunc
+            if isa(ArduinoSyncFunc,'function_handle')
+                feval(ArduinoSyncFunc);
+            end
+        end
     case 'N'
         % New poke initialized
         newPortID = portNum;

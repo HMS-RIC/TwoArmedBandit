@@ -19,6 +19,9 @@ function runTriplePortExperiment_laser_state(varargin)
     manualRewardTriggered = false;
     manualRewardCount = 0;
 
+    global ArduinoSyncFunc
+    ArduinoSyncFunc = @arduinoSync;
+
     % % Hard code laser stimulus profile for now
     % p.laserDelay = 0; % in ms
     % p.laserPulseDuration = 500; % in ms
@@ -216,6 +219,7 @@ function newTrialState = stateTransitionEvent(eventName)
     global TrialState p
     global portRewardState
     global currTrialNum
+    global rewardTimedOut
 
     newTrialState = '';
 
@@ -267,6 +271,25 @@ function newTrialState = stateTransitionEvent(eventName)
             % - center poke or reward-window-timeout result in aborted trial and transition to ITI state
             switch eventName
                 case 'rewardTimeout'
+                    % If REWARD_WINDOW times out:
+                    % - Transition hardware to ISI state, but do not transition in Matlab yet
+                    % - Wait to hear back from Arduino to find out what happens first:
+                    %   - If a poke comes back first, act on that
+                    %   - If arduinoSync comes back first, Matlab can advance state to ISI
+                    if (!rewardTimedOut)
+                        rewardTimedOut = true;
+                        startArduinoBatchMessage();
+                        centerPort.ledOff();
+                        leftPort.ledOff();
+                        rightPort.ledOff();
+                        deactivateCenterLaserStim();
+                        deactivateSideLaserStim();
+                        deactivateSidePorts();
+                        sendArduinoHandshake();
+                        sendArduinoBatchMessage();
+                    end
+
+                case 'arduinoSync'
                     if (p.centerPokeTrigger)
                         newTrialState = 'ITI';
                     end
@@ -344,6 +367,7 @@ function newTrialState = stateTransitionEvent(eventName)
                                         % Will be executed "simultaneously" by the Ardunio
 
         case 'REWARD_WINDOW'
+            rewardTimedOut = false;
             startArduinoBatchMessage();
             centerPort.ledOff();
             leftPort.ledOn();
@@ -648,7 +672,7 @@ function initializeRewardProbabilities()
 
 end
 
-%% Arduino batch message helper functions
+%% Arduino helper functions
 function startArduinoBatchMessage()
     global arduinoConn
     arduinoConn.startBatchMessage();
@@ -659,6 +683,14 @@ function sendArduinoBatchMessage()
     arduinoConn.sendBatchMessage();
 end
 
+function sendArduinoHandshake()
+    global arduinoConn
+    arduinoConn.writeMessage('^');
+end
+
+function arduinoSync()
+    stateTransitionEvent('arduinoSync');
+end
 
 %% Cleanup
 % Cleanup function is run when program ends (either naturally or after ctl-c)

@@ -1,14 +1,21 @@
 # Changes and Possible Issues with State-Machine version
 
 To Do:
-- Add new laser stim type: center-in -> side-out
-	- Accomplish this by adding a new checkbox:
-		"Side laser follows center laser"
+- Fix time synchronization issues!!!
+	- e.g. sometimes Matlab decides that Reward_Window timed out while the Arduino registers a rewarded decision poke
+	- Allow batch Arduino commands to execute atomically — DONE (to be tested)
+	- What about Matlab: can a new Arduino message interrupt the execution of stateTransitionEvent???
+		- Read docs on "Interrupt Callback Execution"
+
+Low priority:
 - Stop new stats/history files from overwriting old ones
-- Select path dialog: default to previous path
 
 
 DONE:
+- Select path dialog: default to previous path (I think??)
+- Add new laser stim type: center-in -> side-out
+	- Accomplish this by adding a new checkbox:
+		"Side laser follows center laser"
 - **** Add "deliver extra reward button" (during experiment)
 - Stop expt button: turn off all LEDs/Laser/reward
 - Have Max-duration timeout for variable laser stim
