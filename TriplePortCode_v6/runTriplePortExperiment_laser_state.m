@@ -276,7 +276,7 @@ function newTrialState = stateTransitionEvent(eventName)
                     % - Wait to hear back from Arduino to find out what happens first:
                     %   - If a poke comes back first, act on that
                     %   - If arduinoSync comes back first, Matlab can advance state to ISI
-                    if (!rewardTimedOut)
+                    if (~rewardTimedOut)
                         rewardTimedOut = true;
                         startArduinoBatchMessage();
                         centerPort.ledOff();
