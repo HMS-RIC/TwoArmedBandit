@@ -22,10 +22,8 @@ function runTriplePortExperiment_laser_state(varargin)
     global ArduinoSyncFunc
     ArduinoSyncFunc = @arduinoSync;
 
-    % % Hard code laser stimulus profile for now
-    % p.laserDelay = 0; % in ms
-    % p.laserPulseDuration = 500; % in ms
-    % p.laserPulsePeriod = 500; % in ms
+    % Should ISI timer trigger at NoseIn or NoseOut?
+    ISI_NoseOut = true;
 
     %% Setup
 
@@ -77,6 +75,7 @@ function runTriplePortExperiment_laser_state(varargin)
     centerPort.setLaserPin(12);
     centerPort.deactivate();
     centerPort.noseInFunc = @noseIn;
+    centerPort.noseOutFunc = @noseOut;
     logValue('center port ID', centerPort.portID);
 
     rightPort = NosePort(7,4);
@@ -86,6 +85,7 @@ function runTriplePortExperiment_laser_state(varargin)
     rightPort.setToSingleRewardMode();
     rightPort.manualRewardFunc = @manualRewardFunc;
     rightPort.noseInFunc = @noseIn;
+    rightPort.noseOutFunc = @noseOut;
     rightPort.rewardedNoseInFunc = @rewardedNoseIn;
     logValue('right port ID', rightPort.portID);
 
@@ -96,6 +96,7 @@ function runTriplePortExperiment_laser_state(varargin)
     leftPort.setToSingleRewardMode();
     leftPort.manualRewardFunc = @manualRewardFunc;
     leftPort.noseInFunc = @noseIn;
+    leftPort.noseOutFunc = @noseOut;
     leftPort.rewardedNoseInFunc = @rewardedNoseIn;
     logValue('left port ID', leftPort.portID);
 
@@ -156,10 +157,9 @@ function runTriplePortExperiment_laser_state(varargin)
     pokeCount = 0;
     pokeHistory= struct;
 
-    global iti lastPokeTime
+    global iti
     iti = p.minInterTrialInterval;
     rewardWin = p.centerPokeRewardWindow;
-    lastPokeTime = clock;
 
     %create stats structure for online analysis and visualization
     global stats currTrialNum
@@ -190,9 +190,13 @@ function runTriplePortExperiment_laser_state(varargin)
     % Where <event> is a poke/timeout/other even that might trigger a transition
 
 
-    global TrialState
+    global TrialState lastNoseInTime lastNoseOutTime isNoseIn
     TrialState = 'ITI';
-    lastPokeTime = datevec(0); % force immediate transition from ITI to START
+    lastNoseInTime = datevec(0); % force immediate transition from ITI to START
+    isNoseIn = false;
+    lastNoseOutTime = datevec(0); % force immediate transition from ITI to START
+
+
 
     %% RUN THE PROGRAM:
     % Runs as long as info.running has not been set to false via the "Stop
@@ -200,13 +204,22 @@ function runTriplePortExperiment_laser_state(varargin)
     while info.running
         pause(0.1)
         % check for iti & reward timeouts every ~100ms
-        if strcmp(TrialState, 'ITI') & (etime(clock, lastPokeTime) >= iti)
-            stateTransitionEvent('itiTimeout');
-        end
-        if (    strcmp(TrialState, 'REWARD_WINDOW') & ...
-                p.centerPokeTrigger & ...
-                (etime(clock, lastPokeTime) >= rewardWin) )
-            stateTransitionEvent('rewardTimeout');
+        if strcmp(TrialState, 'ITI')
+            if ISI_NoseOut
+                % NoseOut-based ITI timing
+                if (~isNoseIn) & (etime(clock, lastNoseOutTime) >= iti)
+                    stateTransitionEvent('itiTimeout');
+                end
+            else
+                % NoseIn-based ITI timing
+                if (etime(clock, lastNoseInTime) >= iti)
+                    stateTransitionEvent('itiTimeout');
+                end
+            end
+        elseif strcmp(TrialState, 'REWARD_WINDOW')
+            if (p.centerPokeTrigger & (etime(clock, lastNoseInTime) >= rewardWin) )
+                stateTransitionEvent('rewardTimeout');
+            end
         end
     end
 
@@ -477,9 +490,15 @@ function rewardedNoseIn(portID)
     end
 end
 
+function noseOut(portID)
+    global isNoseIn lastNoseOutTime
+    isNoseIn = false;
+    lastNoseOutTime = clock;
+end
 
 function noseIn(portID)
-    global rightPort leftPort centerPort pokeCount
+    global rightPort leftPort centerPort pokeCount isNoseIn
+    isNoseIn = true;
     % disp('noseIn')
 
     % Initiate appropriate state transition
@@ -507,7 +526,7 @@ end
 
 function updatePokeStats(pokeSide, pokeType)
     global p
-    global pokeHistory pokeCount lastPokeTime
+    global pokeHistory pokeCount lastNoseInTime
     global rightPort leftPort centerPort
     global activateLeft activateRight side_laser_state center_laser_state
     global stats currTrialNum
@@ -517,14 +536,14 @@ function updatePokeStats(pokeSide, pokeType)
     global sync_counter sync_frame
     sync_frame = sync_counter;
 
-    % pokeCount: value should be correct. It is incremented in noseIn()
-    pokeHistory(pokeCount).timeStamp = now;
-    timeSinceLastPoke = etime(clock, lastPokeTime);
-    %update the lastPokeTime
-    lastPokeTime = clock;
+    % update the lastNoseInTime
+    currPoketime = clock;
+    timeSinceLastPoke = etime(currPoketime, lastNoseInTime);
+    lastNoseInTime = currPoketime;
 
     % Update pokeHistory and initiate appropriate state transition
-    pokeHistory(pokeCount).timeStamp = now;
+    % pokeCount: value should be correct. It is incremented in noseIn()
+    pokeHistory(pokeCount).timeStamp = datenum(currPoketime);
     switch pokeSide
         case {'rightPoke', 'rightPokeRewarded'}
             pokeHistory(pokeCount).portPoked = 'rightPort';
