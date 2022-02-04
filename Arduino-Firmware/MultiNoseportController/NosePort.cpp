@@ -307,7 +307,7 @@ void NosePort::interpretCommand(String message) {
   message.trim(); // remove leading and trailing white space
   int len = message.length();
   if (len==0) {
-    Serial.println("#"); // "#" means error
+    Serial.println("# emptyMessage"); // "#" means error
     return;
   }
   char command = message[0]; // the command is the first char of a message
@@ -348,7 +348,9 @@ void NosePort::interpretCommand(String message) {
 
     if ((arg1 <= 0) || (arg1 > nosePortListSize)) {
       // Bad NosePort Number
-      Serial.println("#"); // "#" means error
+      Serial.print("# badPortNumber: \""); // "#" means error
+      Serial.print(message);
+      Serial.println("\"");
       return;
     }
     int nosePortNum = arg1;
@@ -387,7 +389,10 @@ void NosePort::interpretCommand(String message) {
       nosePortList[nosePortNum-1]->setLaserActive(arg2);
 
     } else { // unknown command
-      Serial.println("#"); // "#" means error
+      Serial.print("# unknownMessage: \""); // "#" means error
+      Serial.print(message);
+      Serial.println("\"");
+
     }
   }
 }

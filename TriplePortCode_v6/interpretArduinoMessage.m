@@ -70,7 +70,7 @@ switch messageType
     case '#'
         % Error
         logEvent('Arduino ERROR');
-        fprintf('\nERROR: Arduino error code.\n\n');
+        fprintf('\nERROR: Arduino error code: [%s]\n\n', messageString);
     otherwise
         % unknown input
         disp(messageType)
