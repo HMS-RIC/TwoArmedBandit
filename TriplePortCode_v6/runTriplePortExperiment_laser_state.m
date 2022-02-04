@@ -73,6 +73,7 @@ function runTriplePortExperiment_laser_state(varargin)
     centerPort = NosePort(5,13);
     centerPort.setLEDPin(8);
     centerPort.setLaserPin(12);
+    centerPort.laserOnFunc = @laserOn;
     centerPort.deactivate();
     centerPort.noseInFunc = @noseIn;
     centerPort.noseOutFunc = @noseOut;
@@ -81,9 +82,10 @@ function runTriplePortExperiment_laser_state(varargin)
     rightPort = NosePort(7,4);
     rightPort.setLEDPin(10); % <-- change back to 10
     rightPort.setLaserPin(12);
+    rightPort.laserOnFunc = @laserOn;
     rightPort.setRewardDuration(p.rewardDurationRight);
     rightPort.setToSingleRewardMode();
-    rightPort.manualRewardFunc = @manualRewardFunc;
+    rightPort.manualRewardFunc = @manualReward;
     rightPort.noseInFunc = @noseIn;
     rightPort.noseOutFunc = @noseOut;
     rightPort.rewardedNoseInFunc = @rewardedNoseIn;
@@ -92,9 +94,10 @@ function runTriplePortExperiment_laser_state(varargin)
     leftPort = NosePort(6,3);
     leftPort.setLEDPin(9);
     leftPort.setLaserPin(12);
+    leftPort.laserOnFunc = @laserOn;
     leftPort.setRewardDuration(p.rewardDurationLeft);
     leftPort.setToSingleRewardMode();
-    leftPort.manualRewardFunc = @manualRewardFunc;
+    leftPort.manualRewardFunc = @manualReward;
     leftPort.noseInFunc = @noseIn;
     leftPort.noseOutFunc = @noseOut;
     leftPort.rewardedNoseInFunc = @rewardedNoseIn;
@@ -233,6 +236,7 @@ function newTrialState = stateTransitionEvent(eventName)
     global portRewardState
     global currTrialNum
     global rewardTimedOut
+    global centerPort leftPort rightPort
 
     newTrialState = '';
 
@@ -287,9 +291,9 @@ function newTrialState = stateTransitionEvent(eventName)
                     % If REWARD_WINDOW times out:
                     % - Transition hardware to ISI state, but do not transition in Matlab yet
                     % - Wait to hear back from Arduino to find out what happens first:
-                    %   - If a poke comes back first, act on that
-                    %   - If arduinoSync comes back first, Matlab can advance state to ISI
-                    if (~rewardTimedOut)
+                    %   - If a poke comes back first, act on that (as if it happened *before* timeout)
+                    %   - If arduinoSync comes back first, it was a true timeout: Matlab can advance state to ISI
+                    if (p.centerPokeTrigger) & (~rewardTimedOut)
                         rewardTimedOut = true;
                         startArduinoBatchMessage();
                         centerPort.ledOff();
@@ -303,42 +307,24 @@ function newTrialState = stateTransitionEvent(eventName)
                     end
 
                 case 'arduinoSync'
-                    if (p.centerPokeTrigger)
-                        newTrialState = 'ITI';
-                    end
+                    fprintf('***  Trial TIMED OUT  ***\n');
+                    newTrialState = 'ITI';
                 case 'centerPoke'
+                    fprintf('***  Center Poke — Trial ABORTED  ***\n');
                     logIncorrectPoke(eventName);
                     newTrialState = 'ITI';
-                    fprintf('***  Center Poke — Trial ABORTED  ***\n');
                 case {'leftPoke', 'rightPoke', 'leftPokeRewarded', 'rightPokeRewarded'}
-                    logDecisionPoke(eventName);
-                    newTrialState = 'ITI';
                     if (strcmp(eventName, 'leftPokeRewarded') || (strcmp(eventName, 'rightPokeRewarded')))
                         fprintf('***  Decision Poke — %s  - REWARDED Trial ***\n', eventName);
                     else
                         fprintf('***  Decision Poke — %s  - UNREWARDED Trial ***\n', eventName);
                     end
+                    logDecisionPoke(eventName);
+                    newTrialState = 'ITI';
             end
 
         otherwise
             warning('Unexpected state.')
-    end
-
-    % was laser active?
-    global centerPort leftPort rightPort
-    switch eventName
-        case 'centerPoke'
-            if centerPort.laserActive
-                fprintf(' * Center Laser\n');
-            end
-        case 'leftPoke'
-            if leftPort.laserActive
-                fprintf(' * Side Laser\n');
-            end
-        case 'rightPoke'
-            if rightPort.laserActive
-                fprintf(' * Side Laser\n');
-            end
     end
 
     % 2) State Transition (if needed)
@@ -639,8 +625,19 @@ function printStats()
     fprintf ('Trials:  %3i    %3i    %3i\n', leftTrials, rightTrials, totalTrials)
 end
 
+
+%% Laser Functions
+function laserOn(portID)
+    global rightPort leftPort centerPort
+    if (portID == rightPort.portID) | (portID == leftPort.portID)
+        fprintf(' * Side Laser\n');
+    elseif portID == centerPort.portID
+        fprintf(' * Center Laser\n');
+    end
+end
+
 %% Reward Function
-function manualRewardFunc(portID)
+function manualReward(portID)
     fprintf('***  Manual Reward Delivered  ***\n');
 end
 

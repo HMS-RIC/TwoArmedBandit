@@ -1,8 +1,11 @@
 # Changes and Possible Issues with State-Machine version
 
 Q: What does "reward window" mean in training trials (centerPokeTrigger off)?
+	- Does reward window never timeout for them?
+Q: Should ITI timeout consider nose-out??
 
 To Do:
+- When Center & Side Laser overlap, side laser is cut short?
 - Fix time synchronization issues!!!
 	- Ambiguity when Matlab decides that Reward_Window timed out while the Arduino registers a rewarded decision poke - DONE (to be tested)
 	- Allow batch Arduino commands to execute atomically — DONE (to be tested)

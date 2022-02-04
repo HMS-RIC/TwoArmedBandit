@@ -12,7 +12,9 @@ classdef NosePort  < handle
         laserActive = false;
         noseInFunc = [];
         noseOutFunc = [];
+        rewardedNoseInFunc = [];
         rewardFunc = [];
+        manualRewardFunc = [];
         laserOnFunc = [];
         laserOffFunc = [];
         arduinoConn = [];
