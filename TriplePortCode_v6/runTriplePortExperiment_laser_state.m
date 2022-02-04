@@ -527,6 +527,7 @@ end
 function updatePokeStats(pokeSide, pokeType)
     global p
     global pokeHistory pokeCount lastNoseInTime
+    global currBlockReward
     global rightPort leftPort centerPort
     global activateLeft activateRight side_laser_state center_laser_state
     global stats currTrialNum
@@ -720,6 +721,9 @@ end
 % Cleanup function is run when program ends (either naturally or after ctl-c)
 function triplePortCleanup()
     disp('Cleaning up...')
+
+    global TrialState
+    TrialState = [];
 
     %turn all LEDs/lasers off
     global centerPort rightPort leftPort
