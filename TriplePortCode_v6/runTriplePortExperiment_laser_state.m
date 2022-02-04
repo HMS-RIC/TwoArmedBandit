@@ -23,7 +23,7 @@ function runTriplePortExperiment_laser_state(varargin)
     ArduinoSyncFunc = @arduinoSync;
 
     % Should ISI timer trigger at NoseIn or NoseOut?
-    ISI_NoseOut = true;
+    ISI_NoseOut = false;
 
     %% Setup
 
