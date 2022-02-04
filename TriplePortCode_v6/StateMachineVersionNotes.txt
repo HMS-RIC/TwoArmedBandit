@@ -10,6 +10,7 @@ To Do:
 	- would need to implement a queue of incoming messages??
 - Still is synchronization issue when side & center pokes happen nearly simultaneously during reward window (was it an abort or a decision?)
 	- Not a realistic issue because it takes time for mouse to switch ports
+- Log update histogram stats to log file (mean? median? max?)
 
 Low priority:
 - Stop new stats/history files from overwriting old ones
