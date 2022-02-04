@@ -47,11 +47,12 @@ methods
 		fprintf('Waiting for Arduino startup')
         obj.writeString(obj.handshakeCharacter)
         waitCounter = 0;
+	    pause(0.2);
 		while (~obj.connected)
-		    pause(0.1);
             waitCounter = waitCounter + 1;
+            obj.writeString(obj.handshakeCharacter)
+		    pause(0.2);
             if (mod(waitCounter,5)==0)
-                obj.writeString(obj.handshakeCharacter)
 			    fprintf('.');
             end
 		end
@@ -59,12 +60,12 @@ methods
 	end
 
 	function startBatchMessage(obj)
-		batchMode = true;
+		obj.batchMode = true;
 		obj.batchMessageString = '';
 	end
 
 	function sendBatchMessage(obj)
-		batchMode = false;
+		obj.batchMode = false;
 		obj.writeString(obj.batchMessageString);
 		obj.batchMessageString = '';
 	end
@@ -81,8 +82,12 @@ methods
 		    stringToSend = sprintf('%s %d %d',messageChar, arg1, arg2);
 		end
 
-		if batchMode
-			batchMessageString = sprintf('%s; %s', batchMessageString, stringToSend);
+		if obj.batchMode
+			if isempty(obj.batchMessageString)
+				obj.batchMessageString = stringToSend;
+			else
+				obj.batchMessageString = sprintf('%s; %s', obj.batchMessageString, stringToSend);
+			end
 		else
 		    obj.writeString(stringToSend);
 		end
@@ -109,6 +114,11 @@ methods
 		if (~obj.connected)
 			obj.connected = true;
 		end
+
+	    % DEBUGING
+	    if obj.debugMode
+	    	disp(['From Arduino: "', receivedMessage, '"' ]);
+	    end
 
 		% run user code to evaluate the message
         %feval(obj.messgeCallbackFcn, receivedMessage);

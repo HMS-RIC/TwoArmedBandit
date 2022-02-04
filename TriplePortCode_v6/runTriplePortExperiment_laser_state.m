@@ -708,7 +708,12 @@ function sendArduinoHandshake()
 end
 
 function arduinoSync()
-    stateTransitionEvent('arduinoSync');
+    global TrialState
+    % Ignore sync messages from initial handshaking
+    % (TrialState hasn't been set up yet)
+    if ~isempty(TrialState)
+        stateTransitionEvent('arduinoSync');
+    end
 end
 
 %% Cleanup
