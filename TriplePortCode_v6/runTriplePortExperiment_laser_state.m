@@ -199,13 +199,26 @@ function runTriplePortExperiment_laser_state(varargin)
     isNoseIn = false;
     lastNoseOutTime = datevec(0); % force immediate transition from ITI to START
 
-
+    % keep track of update frequency for debugging
+    global intervalHist adjustedIntervalHist
+    intervalHist = zeros(1,1000); % represents 0-999 ms
+    adjustedIntervalHist = zeros(1,1000); % represents 0-999 ms
 
     %% RUN THE PROGRAM:
     % Runs as long as info.running has not been set to false via the "Stop
     % Experiment" button
+    lastUpdate = clock();
     while info.running
-        pause(0.1)
+        interval = ceil(etime(clock, lastUpdate)*1000); % interval in ms
+        intervalHist(interval+1) = intervalHist(interval+1) + 1;
+        if interval < 10
+            pause(0.02)
+            % pause is needed to keep CPU load down
+            % on OSX, pause timing is good 90% of the time, but can go up to 100ms, and very rarely longer
+        end
+        interval = ceil(etime(clock, lastUpdate)*1000); % interval in ms
+        adjustedIntervalHist(interval+1) = adjustedIntervalHist(interval+1) + 1;
+        lastUpdate = clock();
         % check for iti & reward timeouts every ~100ms
         if strcmp(TrialState, 'ITI')
             if ISI_NoseOut
