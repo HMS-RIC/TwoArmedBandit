@@ -2,22 +2,25 @@
 
 Q: What does "reward window" mean in training trials (centerPokeTrigger off)?
 	- Does reward window never timeout for them?
-Q: Should ITI timeout consider nose-out??
+Q: Should ITI timeout consider nose-out?? (Hard-coded preferences)
 
 To Do:
-- When Center & Side Laser overlap, side laser is cut short?
-- Fix time synchronization issues!!!
-	- Ambiguity when Matlab decides that Reward_Window timed out while the Arduino registers a rewarded decision poke - DONE (to be tested)
-	- Allow batch Arduino commands to execute atomically — DONE (to be tested)
-	- What about Matlab: can a new Arduino message interrupt the execution of stateTransitionEvent???
-		- Read docs on "Interrupt Callback Execution"
+- When fixed-duration Center & Side Laser overlap, side laser is cut short. Why?
+- What about Matlab: can a new Arduino message interrupt the execution of stateTransitionEvent???
+	- would need to implement a queue of incoming messages??
+- Still is synchronization issue when side & center pokes happen nearly simultaneously during reward window (was it an abort or a decision?)
+	- Not a realistic issue because it takes time for mouse to switch ports
 
 Low priority:
 - Stop new stats/history files from overwriting old ones
-- Should ITI counter reset on *nose-out* rather than nose-in? (DONE - added preference, to be tested)
+- Improve Matlab update timing by using Timer
 
 
 DONE:
+- Fix time synchronization issues!!!
+	- Ambiguity when Matlab decides that Reward_Window timed out while the Arduino registers a rewarded decision poke - DONE
+	- Allow batch Arduino commands to execute atomically — DONE
+- Should ITI counter reset on *nose-out* rather than nose-in? - DONE - added preference
 - Select path dialog: default to previous path (I think??)
 - Add new laser stim type: center-in -> side-out
 	- Accomplish this by adding a new checkbox:
