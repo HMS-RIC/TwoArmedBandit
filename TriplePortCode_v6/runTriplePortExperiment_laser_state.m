@@ -15,8 +15,7 @@ function runTriplePortExperiment_laser_state(varargin)
     global arduinoMessageString
     global p % parameter structure
     global info % structure containing mouse name and folder to be saved in
-    global manualRewardTriggered manualRewardCount
-    manualRewardTriggered = false;
+    global manualRewardCount
     manualRewardCount = 0;
 
     global ArduinoSyncFunc
@@ -652,6 +651,8 @@ end
 %% Reward Function
 function manualReward(portID)
     fprintf('***  Manual Reward Delivered  ***\n');
+    global manualRewardCount
+    manualRewardCount = manualRewardCount + 1;
 end
 
 function reupdateRewardProbabilities()
