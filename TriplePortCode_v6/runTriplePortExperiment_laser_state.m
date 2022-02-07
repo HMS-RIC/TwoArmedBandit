@@ -200,8 +200,9 @@ function runTriplePortExperiment_laser_state(varargin)
 
     % keep track of update frequency for debugging
     global intervalHist adjustedIntervalHist
-    intervalHist = zeros(1,1000); % represents 0-999 ms
-    adjustedIntervalHist = zeros(1,1000); % represents 0-999 ms
+    histMaxTime = 1000; % histogram will have bins for 0-999 ms
+    intervalHist = zeros(1,histMaxTime);
+    adjustedIntervalHist = zeros(1,histMaxTime);
 
     %% RUN THE PROGRAM:
     % Runs as long as info.running has not been set to false via the "Stop
@@ -209,6 +210,7 @@ function runTriplePortExperiment_laser_state(varargin)
     lastUpdate = clock();
     while info.running
         interval = ceil(etime(clock, lastUpdate)*1000); % interval in ms
+        interval = min(histMaxTime-1, interval); % value saturates at histMaxTime
         intervalHist(interval+1) = intervalHist(interval+1) + 1;
         if interval < 10
             pause(0.02)
@@ -216,6 +218,7 @@ function runTriplePortExperiment_laser_state(varargin)
             % on OSX, pause timing is good 90% of the time, but can go up to 100ms, and very rarely longer
         end
         interval = ceil(etime(clock, lastUpdate)*1000); % interval in ms
+        interval = min(histMaxTime-1, interval); % value saturates at histMaxTime
         adjustedIntervalHist(interval+1) = adjustedIntervalHist(interval+1) + 1;
         lastUpdate = clock();
         % check for iti & reward timeouts every ~100ms
