@@ -748,6 +748,24 @@ function triplePortCleanup()
     rightPort.deactivateLaser();
     leftPort.deactivateLaser();
 
+    global intervalHist adjustedIntervalHist
+    numIntervals = sum(adjustedIntervalHist);
+    meanWorkInterval = sum(intervalHist .* [1:numel(intervalHist)]) / numIntervals;
+    maxWorkInterval = find(intervalHist > 0, 1, 'last');
+    meanInterval = sum(adjustedIntervalHist .* [1:numel(adjustedIntervalHist)]) / numIntervals;
+    maxInterval = find(adjustedIntervalHist > 0, 1, 'last');
+    adjustedIntervalCumDist = cumsum(adjustedIntervalHist) / numIntervals;
+    quantile99Interval = find(adjustedIntervalCumDist >= 0.99,1);
+    quantile999Interval = find(adjustedIntervalCumDist >= 0.999,1);
+    quantile9999Interval = find(adjustedIntervalCumDist >= 0.999,1);
+    logValue('WorkInterval_Mean', meanWorkInterval);
+    logValue('WorkInterval_Max', maxWorkInterval);
+    logValue('LoopInterval_Mean', meanInterval);
+    logValue('LoopInterval_Max', maxInterval);
+    logValue('LoopInterval_99quantile', quantile99Interval);
+    logValue('LoopInterval_999quantile', quantile999Interval);
+    logValue('LoopInterval_9999quantile', quantile9999Interval);
+
     %close log file
     global logFileID AllNosePorts
     fclose(logFileID);
