@@ -68,3 +68,23 @@ Manual Reward delivery:
 - But there is new field, pokeHistory(pokeCount).manualRewards, that lists the # of manual rewards triggered prior to that poke
 	- the assumption is that manual rewards are triggered in between pokes. Is that true???
 
+=====
+=====
+
+EXAMPLE OF Arduino-Matlab comms when lick & timeout happen at once:
+
+***  Center Poke — Trial 85 Initiated  ***
+Rewarded ports:  R:1  L:1
+14:51:57.015 To Arduino: "F 1 0; O 3 0; O 2 0; A 2 1; A 3 1"
+14:51:57.089 From Arduino: "O 1"
+14:51:59.009 To Arduino: "F 3 0; F 2 0; A 2 0; A 3 0; ^"
+14:51:59.018 From Arduino: "D 2"
+***  Decision Poke — rightPokeRewarded  - REWARDED Trial ***
+Current block reward count: 85
+           L      R    Tot
+Rewards:  37     48     85
+Trials:   37     48     85
+14:51:59.043 To Arduino: "A 2 0; A 3 0"
+14:51:59.085 From Arduino: "^"
+14:51:59.111 From Arduino: "O 2"
+14:52:00.032 To Arduino: "O 1 0; A 2 0; A 3 0"

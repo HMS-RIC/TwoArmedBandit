@@ -71,6 +71,7 @@ switch messageType
         % Error
         logEvent('Arduino ERROR');
         fprintf('\nERROR: Arduino error code: [%s]\n\n', messageString);
+        warning('Arduino error');
     otherwise
         % unknown input
         disp(messageType)

@@ -66,6 +66,9 @@ methods
 
 	function sendBatchMessage(obj)
 		obj.batchMode = false;
+		if isempty(obj.batchMessageString)
+			warning('Empty batch message');
+		end
 		obj.writeString(obj.batchMessageString);
 		obj.batchMessageString = '';
 	end
@@ -98,7 +101,7 @@ methods
 
 	    % DEBUGING
 	    if obj.debugMode
-	    	disp(['To Arduino: "', stringToWrite, '"' ]);
+	    	disp([datestr(now(),'HH:MM:SS.FFF'), ' To Arduino: "', stringToWrite, '"' ]);
 	    end
 	end
 
@@ -117,7 +120,7 @@ methods
 
 	    % DEBUGING
 	    if obj.debugMode
-	    	disp(['From Arduino: "', receivedMessage, '"' ]);
+	    	disp([datestr(now(),'HH:MM:SS.FFF'), ' From Arduino: "', receivedMessage, '"' ]);
 	    end
 
 		% run user code to evaluate the message
