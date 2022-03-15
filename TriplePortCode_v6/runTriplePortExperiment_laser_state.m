@@ -277,6 +277,10 @@ function newTrialState = stateTransitionEvent(eventName)
                         newTrialState = 'REWARD_WINDOW';
                         fprintf('\n\n***  Trial %i Initiated  ***\n', currTrialNum);
                     end
+                case 'arduinoSync'
+                    % This is the result of a decision poke arriving just before a rewardTimeout.
+                    % We can safely do nothing.
+                    % fprintf('arduinoSync\n');
             end
 
         case 'START'
