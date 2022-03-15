@@ -191,6 +191,12 @@ function runTriplePortExperiment_laser_state(varargin)
     %       stateTransitionEvent(<event>)
     % Where <event> is a poke/timeout/other even that might trigger a transition
 
+    global EventQueue
+    EventQueue = javaObject('java.util.LinkedList');
+    % Note: linked list methods are faster when invoked as functions
+    %       e.g. 'add(queue, element)' rather than 'queue.add(element)'
+    % https://stackoverflow.com/a/4143074
+    % https://stackoverflow.com/a/1745686
 
     global TrialState lastNoseInTime lastNoseOutTime isNoseIn
     TrialState = 'ITI';
@@ -209,19 +215,22 @@ function runTriplePortExperiment_laser_state(varargin)
     % Experiment" button
     lastUpdate = clock();
     while info.running
+        % 1) Compute/save loop timing info
         interval = ceil(etime(clock, lastUpdate)*1000); % interval in ms
         interval = min(histMaxTime-1, interval); % value saturates at histMaxTime
         intervalHist(interval+1) = intervalHist(interval+1) + 1;
+
+        % 2) Add brief delay to short loop intervals to keep CPU loqd down
         if interval < 10
             pause(0.02)
-            % pause is needed to keep CPU load down
-            % on OSX, pause timing is good 90% of the time, but can go up to 100ms, and very rarely longer
+            % on OSX, pause(0.02) timing is good 90% of the time, but can go up to 100ms, and very rarely longer
         end
         interval = ceil(etime(clock, lastUpdate)*1000); % interval in ms
         interval = min(histMaxTime-1, interval); % value saturates at histMaxTime
         adjustedIntervalHist(interval+1) = adjustedIntervalHist(interval+1) + 1;
+
+        % 3) Test for iti & reward timeouts
         lastUpdate = clock();
-        % check for iti & reward timeouts every ~100ms
         if strcmp(TrialState, 'ITI')
             if ISI_NoseOut
                 % NoseOut-based ITI timing
@@ -239,19 +248,42 @@ function runTriplePortExperiment_laser_state(varargin)
                 stateTransitionEvent('rewardTimeout');
             end
         end
+
+        % 4) Process all events accumulated during this loop
+        while (size(EventQueue)>0)
+            processEventQueue()
+        end
     end
 
 end % runTriplePortExperiment
 
 
 
-%% stateTransitionEvent: transitions between states of the state machine
-function newTrialState = stateTransitionEvent(eventName)
+%% stateTransitionEvent()
+%  Any event that could trigger a change in state should be announced by calling this function.
+%  Events will be logged to the EventQueue and (quickly) preocessed, in order, by processEventQueue().
+%  This two-step mechanism is necessary to prevent a later event from interrupting
+%  the processing of an earlier event.
+
+function stateTransitionEvent(eventName)
+    global EventQueue
+    addLast(EventQueue, eventName);
+end
+
+function processEventQueue()
+    global EventQueue
     global TrialState p
     global portRewardState
     global currTrialNum
     global rewardTimedOut
     global centerPort leftPort rightPort
+
+    if size(EventQueue) == 0
+        warning('Event Queue is unexpectedly empty.')
+        return
+    end
+
+    eventName = removeFirst(EventQueue);
 
     newTrialState = '';
 
@@ -485,7 +517,6 @@ function rewardedNoseIn(portID)
     global rightPort leftPort pokeCount
 
     % Initiate appropriate state transition
-    pokeCount = pokeCount+1; %increment pokeCount
     if portID == rightPort.portID
         stateTransitionEvent('rightPokeRewarded');
     elseif portID == leftPort.portID
@@ -507,7 +538,6 @@ function noseIn(portID)
     % disp('noseIn')
 
     % Initiate appropriate state transition
-    pokeCount = pokeCount+1; %increment pokeCount
     if portID == rightPort.portID
         stateTransitionEvent('rightPoke');
     elseif portID == leftPort.portID
@@ -541,6 +571,10 @@ function updatePokeStats(pokeSide, pokeType)
 
     global sync_counter sync_frame
     sync_frame = sync_counter;
+
+    % This function should be called exactly once per poke
+    % This is the one place where we increment pokeCount
+    pokeCount = pokeCount+1;
 
     % update the lastNoseInTime
     currPoketime = clock;
