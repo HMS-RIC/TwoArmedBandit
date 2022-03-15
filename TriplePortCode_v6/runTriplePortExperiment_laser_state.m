@@ -298,7 +298,7 @@ function processEventQueue()
             switch eventName
                 case {'centerPoke', 'leftPoke', 'rightPoke'}
                     logIncorrectPoke(eventName);
-                    fprintf(' *  Poke Between Trials — %s \n', eventName);
+                    fprintf(' *  Poke Between Trials : %s \n', eventName);
                 case {'leftPokeRewarded', 'rightPokeRewarded'}
                     logIncorrectPoke(eventName);
                     warning ('Unexpected rewarded poke during ITI.')
@@ -323,11 +323,11 @@ function processEventQueue()
                 case 'centerPoke'
                     newTrialState = 'REWARD_WINDOW';
                     logInitiationPoke(eventName);
-                    fprintf('\n\n***  Center Poke — Trial %i Initiated  ***\n', currTrialNum);
+                    fprintf('\n\n***  Center Poke : Trial %i Initiated  ***\n', currTrialNum);
                 case {'leftPoke', 'rightPoke'}
                     logIncorrectPoke(eventName);
                     newTrialState = 'ITI';
-                    fprintf(' *  Side Poke — %s \n', eventName);
+                    fprintf(' *  Side Poke : %s \n', eventName);
                 case {'leftPokeRewarded', 'rightPokeRewarded'}
                     logIncorrectPoke(eventName);
                     warning ('Unexpected rewarded poke during Start state.')
@@ -361,14 +361,14 @@ function processEventQueue()
                     fprintf('***  Trial TIMED OUT  ***\n');
                     newTrialState = 'ITI';
                 case 'centerPoke'
-                    fprintf('***  Center Poke — Trial ABORTED  ***\n');
+                    fprintf('***  Center Poke : Trial ABORTED  ***\n');
                     logIncorrectPoke(eventName);
                     newTrialState = 'ITI';
                 case {'leftPoke', 'rightPoke', 'leftPokeRewarded', 'rightPokeRewarded'}
                     if (strcmp(eventName, 'leftPokeRewarded') || (strcmp(eventName, 'rightPokeRewarded')))
-                        fprintf('***  Decision Poke — %s  - REWARDED Trial ***\n', eventName);
+                        fprintf('***  Decision Poke : %s  - REWARDED Trial ***\n', eventName);
                     else
-                        fprintf('***  Decision Poke — %s  - UNREWARDED Trial ***\n', eventName);
+                        fprintf('***  Decision Poke : %s  - UNREWARDED Trial ***\n', eventName);
                     end
                     logDecisionPoke(eventName);
                     newTrialState = 'ITI';
