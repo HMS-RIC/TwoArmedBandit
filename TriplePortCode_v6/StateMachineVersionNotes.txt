@@ -22,6 +22,7 @@ Notes on EventQueue:
 - Implemented EventQueue.
 - What actions take place outside of queue:
 	- nose in/out state variables — only used for ITI timeouts
+	- pokeCount is incremented!! - this could screw up stats  --- fixed
 	- sync_counter updates
 	- manualRewardCount updates
 	- logging of laser stim to command window
