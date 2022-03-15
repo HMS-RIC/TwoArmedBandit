@@ -54,6 +54,7 @@ function TriplePortGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to TriplePortGUI (see VARARGIN)
+set(hObject, 'WindowStyle', 'Normal')
 
 % Choose default command line output for TriplePortGUI
 handles.output = hObject;
