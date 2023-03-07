@@ -795,7 +795,7 @@ function triplePortCleanup()
     adjustedIntervalCumDist = cumsum(adjustedIntervalHist) / numIntervals;
     quantile99Interval = find(adjustedIntervalCumDist >= 0.99,1);
     quantile999Interval = find(adjustedIntervalCumDist >= 0.999,1);
-    quantile9999Interval = find(adjustedIntervalCumDist >= 0.999,1);
+    quantile9999Interval = find(adjustedIntervalCumDist >= 0.9999,1);
     logValue('WorkInterval_Mean', meanWorkInterval);
     logValue('WorkInterval_Max', maxWorkInterval);
     logValue('LoopInterval_Mean', meanInterval);
