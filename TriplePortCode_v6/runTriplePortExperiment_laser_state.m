@@ -2,7 +2,7 @@ function runTriplePortExperiment_laser_state(varargin)
 
     %% State-Machine version of the triple-port experiment
     % previous versions by Ofer Mazor, Shay Neufeld, and others
-    % v6, Ofer Mazor, 2021-09-22
+    % v6.1, Ofer Mazor, 2023-03-08
 
     % print execution path
     fprintf ('Execution path: %s\n', mfilename('fullpath'));
@@ -23,6 +23,10 @@ function runTriplePortExperiment_laser_state(varargin)
 
     % Should ISI timer trigger at NoseIn or NoseOut?
     ISI_NoseOut = false;
+
+    % Delay Duration (TODO: Add this to the GUI)
+    global delayDuration
+    delayDuration = 2.5; % in sec
 
     %% Setup
 
@@ -181,7 +185,11 @@ function runTriplePortExperiment_laser_state(varargin)
     %                   Transition to START when no-poke condition is met.
     %
     %   'START'     Wait for center poke to initiate.
-    %                   Transition to 'REWARD' upon center poke.
+    %                   Transition to 'DELAY' upon center poke.
+    %
+    %   'DELAY'     Enforce a no-new-poke window. Delay can be skipped by setting delay_window to 0.
+    %                   Transition to 'REWARD_WINDOW' upon timeout.
+    %                   Transition to 'ITI' upon any poke during the delay.
     %
     %   'REWARD_WINDOW' Within the reward window. Side pokes get probabilistically rewarded.
     %                   Transition to 'ITI' upon any poke or timeout.
@@ -204,6 +212,12 @@ function runTriplePortExperiment_laser_state(varargin)
     isNoseIn = false;
     lastNoseOutTime = datevec(0); % force immediate transition from ITI to START
 
+    global delayDuration delayWindowStartTime
+    delayWindowStartTime = datevec(0);  % will get reset as soon as a delay state begins
+
+    global rewardWindowStartTime
+    rewardWindowStartTime = datevec(0);  % will get reset as soon as a reeward state begins
+
     % keep track of update frequency for debugging
     global intervalHist adjustedIntervalHist
     histMaxTime = 1000; % histogram will have bins for 0-999 ms
@@ -220,7 +234,7 @@ function runTriplePortExperiment_laser_state(varargin)
         interval = min(histMaxTime-1, interval); % value saturates at histMaxTime
         intervalHist(interval+1) = intervalHist(interval+1) + 1;
 
-        % 2) Add brief delay to short loop intervals to keep CPU loqd down
+        % 2) Add brief delay to short loop intervals to keep CPU load down
         if interval < 10
             pause(0.02)
             % on OSX, pause(0.02) timing is good 90% of the time, but can go up to 100ms, and very rarely longer
@@ -229,7 +243,7 @@ function runTriplePortExperiment_laser_state(varargin)
         interval = min(histMaxTime-1, interval); % value saturates at histMaxTime
         adjustedIntervalHist(interval+1) = adjustedIntervalHist(interval+1) + 1;
 
-        % 3) Test for iti & reward timeouts
+        % 3) Test for iti, delay & reward timeouts
         lastUpdate = clock();
         if strcmp(TrialState, 'ITI')
             if ISI_NoseOut
@@ -243,8 +257,12 @@ function runTriplePortExperiment_laser_state(varargin)
                     stateTransitionEvent('itiTimeout');
                 end
             end
+        elseif strcmp(TrialState, 'DELAY')
+            if (etime(clock, delayWindowStartTime) >= delayDuration)
+                    stateTransitionEvent('delayTimeout');
+                end
         elseif strcmp(TrialState, 'REWARD_WINDOW')
-            if (p.centerPokeTrigger & (etime(clock, lastNoseInTime) >= rewardWin) )
+            if (p.centerPokeTrigger & (etime(clock, rewardWindowStartTime) >= rewardWin) )
                 stateTransitionEvent('rewardTimeout');
             end
         end
@@ -275,7 +293,8 @@ function processEventQueue()
     global TrialState p
     global portRewardState
     global currTrialNum
-    global rewardTimedOut
+    global delayWindowStartTime delayDuration
+    global rewardTimedOut rewardWindowStartTime
     global centerPort leftPort rightPort
 
     if size(EventQueue) == 0
@@ -317,13 +336,21 @@ function processEventQueue()
 
         case 'START'
             % Start state
-            % - wait for central poke to transition to REWARD_WINDOW
+            % - wait for central poke to transition to DELAY
+            %       - if delayDuration is 0, skip to REWARD_WINDOW
             % - side pokes result in transition to ITI state
             switch eventName
                 case 'centerPoke'
-                    newTrialState = 'REWARD_WINDOW';
+                    if delayDuration > 0
+                        newTrialState = 'DELAY';
+                    else
+                        newTrialState = 'REWARD_WINDOW';
+                    end
                     logInitiationPoke(eventName);
                     fprintf('\n\n***  Center Poke : Trial %i Initiated  ***\n', currTrialNum);
+                    if delayDuration > 0
+                        fprintf('- Delay Window Start -\n');
+                    end
                 case {'leftPoke', 'rightPoke'}
                     logIncorrectPoke(eventName);
                     newTrialState = 'ITI';
@@ -331,6 +358,23 @@ function processEventQueue()
                 case {'leftPokeRewarded', 'rightPokeRewarded'}
                     logIncorrectPoke(eventName);
                     warning ('Unexpected rewarded poke during Start state.')
+            end
+
+        case 'DELAY'
+            % Delay state
+            % - wait for delay timer to elapse before switching to REWARD_WINDOW
+            % - any poke during DELAY result in transition to ITI state
+            switch eventName
+                case 'delayTimeout'
+                    newTrialState = 'REWARD_WINDOW';
+                    fprintf('- Delay Window End -\n');
+                case {'centerPoke', 'leftPoke', 'rightPoke'}
+                    logIncorrectPoke(eventName);
+                    newTrialState = 'ITI';
+                    fprintf('***  Poke During Delay (%s): Trial ABORTED  ***\n', eventName);
+                case {'leftPokeRewarded', 'rightPokeRewarded'}
+                    logIncorrectPoke(eventName);
+                    warning ('Unexpected rewarded poke during Delay state.')
             end
 
         case 'REWARD_WINDOW'
@@ -416,7 +460,20 @@ function processEventQueue()
             sendArduinoBatchMessage();  % All the above Arduino commands are sent out at once
                                         % Will be executed "simultaneously" by the Ardunio
 
+        case 'DELAY'
+            delayWindowStartTime = clock();
+            startArduinoBatchMessage();
+            centerPort.ledOff();
+            leftPort.ledOff();
+            rightPort.ledOff();
+            deactivateCenterLaserStim();
+            deactivateSideLaserStim();
+            deactivateSidePorts();
+            sendArduinoBatchMessage();  % All the above Arduino commands are sent out at once
+                                        % Will be executed "simultaneously" by the Ardunio
+
         case 'REWARD_WINDOW'
+            rewardWindowStartTime = clock();
             rewardTimedOut = false;
             startArduinoBatchMessage();
             centerPort.ledOff();
