@@ -22,6 +22,9 @@ private:
   unsigned long _rewardDuration_us;
   bool _singleReward;
   int _ledPin;
+  int _lickPin;
+  int _lickIsHigh;
+  int _lickOngoing;
   int _rewardActivePin;
   bool _rewardActivePinHigh;
   int _laserPin;
@@ -66,6 +69,10 @@ public:
   void setLEDPin(int pin);
   void ledOn();
   void ledOff();
+  void setLickPin(int pin);
+  void setLickPolarity(bool lickIsHigh);
+  void lickStart();
+  void lickEnd();
   void setLaserPin(int pin);
   void setLaserDelay(long delay);             // in ms
   void setLaserEndTrigger(unsigned int trigType);      // trigger types defined above

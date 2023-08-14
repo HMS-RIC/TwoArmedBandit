@@ -8,6 +8,8 @@ classdef NosePort  < handle
         solenoidPin = 0;
         ledPin = 0;
         ledState = 0;
+        lickPin = 0;
+        lickOngoing = 0;
         laserPin = 0;
         laserActive = false;
         noseInFunc = [];
@@ -101,6 +103,22 @@ classdef NosePort  < handle
                 logValue('LED Off', obj.portID);
             end
         end
+
+        %% Lick methods
+        function setLickPin(obj, pin)
+            obj.lickPin = pin;
+            obj.arduinoCommand('K', pin);
+        end
+        function setLickPolarity(obj, lickIsHigh)
+            obj.arduinoCommand('C', lickIsHigh);
+        end
+        function lickStart(obj)
+            obj.lickOngoing = true;
+        end
+        function lickEnd(obj)
+            obj.lickOngoing = false;
+        end
+
 
         %% Laser methods
         function setLaserPin(obj, pin)

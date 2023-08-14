@@ -21,6 +21,10 @@ NosePort::NosePort(int beambreakPin, int solenoidPin) {
   _rewardActivePin = 0;
   _rewardActivePinHigh = false;
 
+  _lickPin = 0;
+  _lickIsHigh = true;
+  _lickOngoing = false;
+
   _laserPin = 0;
   _laserActivated = false;
   _laserStimEndTrigType = LASER_END_TRIG_TIME; // default to timed laser stim duration
@@ -137,6 +141,18 @@ void NosePort::update() {
       noseOut();
     }
   }
+  if (_lickPin > 0) {
+    bool currentLickState = (digitalRead(_lickPin) == (_lickIsHigh?HIGH:LOW));
+    if (_lickOngoing != currentLickState) { // if there's been a change in state
+      if (currentNosePortState) {
+        _lickOngoing = true;
+        lickStart();
+      } else {
+        _lickOngoing = false;
+        lickEnd();
+      }
+    }
+  }
   if (_duringReward) {
     if (micros() - _rewardStartTime_us > _rewardDuration_us ) { // time comparison is corrected for overflow
       digitalWrite(_solenoidPin, LOW);
@@ -217,6 +233,25 @@ void NosePort::ledOff() {
     digitalWrite(_ledPin, LOW);
   }
 }
+
+// Lick Methods
+void NosePort::setLickPin(int pin) {
+  _lickPin = pin;
+  pinMode(_lickPin, INPUT);
+}
+
+void NosePort::setLickPolarity(bool lickIsHigh) {
+  _lickIsHigh = lickIsHigh;
+}
+
+void NosePort::lickStart() {
+  logToUSB('K');
+}
+
+void NosePort::lickEnd() {
+  logToUSB('k');
+}
+
 
 // Laser methods
 void NosePort::setLaserPin(int pin) {
@@ -368,10 +403,15 @@ void NosePort::interpretCommand(String message) {
 
     } else if (command == 'L') { // L: set LED pin
       nosePortList[nosePortNum-1]->setLEDPin(arg2);
-    } else if (command == 'O') { // L: turn LED on
+    } else if (command == 'O') { // O: turn LED on
       nosePortList[nosePortNum-1]->ledOn();
-    } else if (command == 'F') { // L: turn LED off
+    } else if (command == 'F') { // F: turn LED off
       nosePortList[nosePortNum-1]->ledOff();
+
+    } else if (command == 'K') { // K: set lick pin
+      nosePortList[nosePortNum-1]->setLickPin(arg2);
+    } else if (command == 'C') { // Y: set lick polarity (true: lick is HIGH)
+      nosePortList[nosePortNum-1]->setLickPolarity(arg2);
 
     } else if (command == 'P') { // P: set laser pin
       nosePortList[nosePortNum-1]->setLaserPin(arg2);

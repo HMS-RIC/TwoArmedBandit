@@ -67,6 +67,16 @@ switch messageType
         warning('Laser timeout. Make sure "Max laser stim duration" is set appropriately.');
 
 
+    case 'K'
+        % Lick started
+        logValue('Lick start', portNum);
+        AllNosePorts{portNum}.lickStart();
+    case 'k'
+        % Lick ended
+        logValue('Lick end', portNum);
+        AllNosePorts{portNum}.lickStop();
+
+
     case '#'
         % Error
         logEvent('Arduino ERROR');

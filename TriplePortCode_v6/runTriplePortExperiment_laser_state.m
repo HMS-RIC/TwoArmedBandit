@@ -84,6 +84,8 @@ function runTriplePortExperiment_laser_state(varargin)
 
     rightPort = NosePort(7,4);
     rightPort.setLEDPin(10); % <-- change back to 10
+    rightPort.setLickPin(A1);
+    rightPort.setLickPolarity(1);
     rightPort.setLaserPin(12);
     rightPort.laserOnFunc = @laserOn;
     rightPort.setRewardDuration(p.rewardDurationRight);
@@ -96,6 +98,8 @@ function runTriplePortExperiment_laser_state(varargin)
 
     leftPort = NosePort(6,3);
     leftPort.setLEDPin(9);
+    leftPort.setLickPin(2);
+    leftPort.setLickPolarity(1);
     leftPort.setLaserPin(12);
     leftPort.laserOnFunc = @laserOn;
     leftPort.setRewardDuration(p.rewardDurationLeft);
