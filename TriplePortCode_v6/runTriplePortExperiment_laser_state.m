@@ -84,7 +84,7 @@ function runTriplePortExperiment_laser_state(varargin)
 
     rightPort = NosePort(7,4);
     rightPort.setLEDPin(10); % <-- change back to 10
-    rightPort.setLickPin(A1);
+    rightPort.setLickPin(15); % Pin 'A1' is number 15 (on Arduino UNO)
     rightPort.setLickPolarity(1);
     rightPort.setLaserPin(12);
     rightPort.laserOnFunc = @laserOn;

@@ -144,11 +144,10 @@ void NosePort::update() {
   if (_lickPin > 0) {
     bool currentLickState = (digitalRead(_lickPin) == (_lickIsHigh?HIGH:LOW));
     if (_lickOngoing != currentLickState) { // if there's been a change in state
-      if (currentNosePortState) {
-        _lickOngoing = true;
+      _lickOngoing = currentLickState;
+      if (currentLickState) {
         lickStart();
       } else {
-        _lickOngoing = false;
         lickEnd();
       }
     }

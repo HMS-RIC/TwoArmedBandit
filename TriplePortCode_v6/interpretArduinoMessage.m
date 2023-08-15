@@ -74,7 +74,7 @@ switch messageType
     case 'k'
         % Lick ended
         logValue('Lick end', portNum);
-        AllNosePorts{portNum}.lickStop();
+        AllNosePorts{portNum}.lickEnd();
 
 
     case '#'
