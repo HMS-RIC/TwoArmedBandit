@@ -2,6 +2,9 @@ function runTriplePortExperiment_laser_state(varargin)
 
     %% State-Machine version of the triple-port experiment
     % previous versions by Ofer Mazor, Shay Neufeld, and others
+    % v6, Ofer Mazor, 2021-09-22
+    % Updated by Kevin Mastro, 2023-07-10 to reflect the block size to be
+    % based on Trials (currBlockinTrial) and not rewards (currBlockReward)
     % v6.1, Ofer Mazor, 2023-03-08
 
     % print execution path
@@ -623,7 +626,7 @@ end
 function updatePokeStats(pokeSide, pokeType)
     global p
     global pokeHistory pokeCount lastNoseInTime
-    global currBlockReward
+    global currBlockReward currBlockinTrial
     global rightPort leftPort centerPort
     global activateLeft activateRight side_laser_state center_laser_state
     global stats currTrialNum
@@ -669,6 +672,7 @@ function updatePokeStats(pokeSide, pokeType)
         pokeHistory(pokeCount).rightPortStats.ACTIVATE = activateRight;
         pokeHistory(pokeCount).sideLaserState = side_laser_state;
         currTrialNum = currTrialNum + 1;
+        currBlockinTrial = currBlockinTrial + 1;
     elseif (pokeType == 1)
         pokeHistory(pokeCount).centerLaserState = center_laser_state;
     end
@@ -678,10 +682,14 @@ function updatePokeStats(pokeSide, pokeType)
     if strcmp(pokeSide, 'rightPokeRewarded') || strcmp(pokeSide, 'leftPokeRewarded')
         % If it *is* a rewarded poke:
         % - log rewarded port to poke history
+
         pokeHistory(pokeCount).REWARD = 1;
         % - attribute it to current poke and log it.
+        
         currBlockReward = currBlockReward + 1;
         fprintf('Current block reward count: %i \n', currBlockReward);
+        fprintf('Current block trial count: %i \n', currBlockinTrial);
+
 
         % Error checking:
         % Rewards should only happen on decision pokes (pokeType 2).
@@ -715,14 +723,17 @@ function updatePokeStats(pokeSide, pokeType)
     cumstats = cumsumstats(stats);
     updatestatsfig(cumstats,h,pokeCount);
 
-    if strcmp(pokeSide, 'rightPokeRewarded') || strcmp(pokeSide, 'leftPokeRewarded')
-        reupdateRewardProbabilities();
-    end
-
     % Print stats after every decision poke
     if (pokeType == 2)
         printStats();
     end
+
+    if strcmp(pokeSide, 'rightPoke') || strcmp(pokeSide, 'leftPoke')||strcmp(pokeSide, 'rightPokeRewarded') || strcmp(pokeSide, 'leftPokeRewarded')
+    %if strcmp(pokeSide, 'rightPokeRewarded') || strcmp(pokeSide, 'leftPokeRewarded')
+        reupdateRewardProbabilities();
+    end
+
+    
 end
 
 function printStats()
@@ -759,13 +770,15 @@ end
 
 function reupdateRewardProbabilities()
     global p
-    global currBlockReward blockRange currBlockSize
+    global currBlockinTrial currBlockReward blockRange currBlockSize
 
     %reupdate reward probabilities if needed.
-    if currBlockReward >= currBlockSize
+    if currBlockinTrial >=currBlockSize
+%     if currBlockReward >= currBlockSize
         p.leftRewardProb = 1 - p.leftRewardProb;
         p.rightRewardProb = 1 - p.rightRewardProb;
         currBlockReward = 0;
+        currBlockinTrial = 0;
         currBlockSize = randi([min(blockRange),max(blockRange)]);
         fprintf('\n** Reward Probabilities Switched **\n')
         fprintf('Left Reward Prob: %g \n', p.leftRewardProb)
@@ -784,7 +797,7 @@ function initializeRewardProbabilities()
     % to be called once at the start of a session
 
     global p
-    global currBlockReward blockRange currBlockSize
+    global currBlockinTrial currBlockReward blockRange currBlockSize
 
     global numBlocks
     numBlocks = struct;
@@ -797,6 +810,7 @@ function initializeRewardProbabilities()
     end
 
     currBlockReward = 0;
+    currBlockinTrial = 0;
     blockRange = [p.blockRangeMin:p.blockRangeMax];
     currBlockSize = randi([min(blockRange),max(blockRange)]);
     fprintf('Left Reward Prob: %g \n', p.leftRewardProb)
