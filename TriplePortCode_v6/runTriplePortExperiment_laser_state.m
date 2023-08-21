@@ -27,6 +27,10 @@ function runTriplePortExperiment_laser_state(varargin)
     % Should ISI timer trigger at NoseIn or NoseOut?
     ISI_NoseOut = false;
 
+
+    %% Hard-Coded parameters (should be migrated into GUI)
+    p.trialBasedBlocks = true; % Trial-based or Reward-based block counting?
+
     % Delay Duration (TODO: Add this to the GUI)
     global delayDuration
     delayDuration = 2.5; % in sec
@@ -773,8 +777,20 @@ function reupdateRewardProbabilities()
     global currBlockinTrial currBlockReward blockRange currBlockSize
 
     %reupdate reward probabilities if needed.
-    if currBlockinTrial >=currBlockSize
-%     if currBlockReward >= currBlockSize
+    performReupdate = false;
+    if p.trialBasedBlocks
+        % Trial-based block counting
+        if currBlockinTrial >=currBlockSize
+            performReupdate = true;
+        end
+    else
+        % Reward-based block counting
+        if currBlockReward >= currBlockSize  
+            performReupdate = true;
+        end
+    end
+
+    if performReupdate
         p.leftRewardProb = 1 - p.leftRewardProb;
         p.rightRewardProb = 1 - p.rightRewardProb;
         currBlockReward = 0;
