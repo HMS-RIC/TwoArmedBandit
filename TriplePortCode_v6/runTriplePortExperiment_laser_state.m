@@ -29,11 +29,10 @@ function runTriplePortExperiment_laser_state(varargin)
 
 
     %% Hard-Coded parameters (should be migrated into GUI)
-    p.trialBasedBlocks = true; % Trial-based or Reward-based block counting?
-
-    % Delay Duration (TODO: Add this to the GUI)
-    global delayDuration
-    delayDuration = 2.5; % in sec
+    % Trial-based or Reward-based block counting?
+    p.trialBasedBlocks = true; 
+    % Delay Duration
+    p.delayDuration = 2.5; % in sec  (set to 0 for no DELAY state)
 
     %% Setup
 
@@ -223,7 +222,7 @@ function runTriplePortExperiment_laser_state(varargin)
     isNoseIn = false;
     lastNoseOutTime = datevec(0); % force immediate transition from ITI to START
 
-    global delayDuration delayWindowStartTime
+    global delayWindowStartTime
     delayWindowStartTime = datevec(0);  % will get reset as soon as a delay state begins
 
     global rewardWindowStartTime
@@ -234,6 +233,8 @@ function runTriplePortExperiment_laser_state(varargin)
     histMaxTime = 1000; % histogram will have bins for 0-999 ms
     intervalHist = zeros(1,histMaxTime);
     adjustedIntervalHist = zeros(1,histMaxTime);
+
+    delayDuration = p.delayDuration;
 
     %% RUN THE PROGRAM:
     % Runs as long as info.running has not been set to false via the "Stop
@@ -304,7 +305,7 @@ function processEventQueue()
     global TrialState p
     global portRewardState
     global currTrialNum
-    global delayWindowStartTime delayDuration
+    global delayWindowStartTime
     global rewardTimedOut rewardWindowStartTime
     global centerPort leftPort rightPort
 
@@ -352,14 +353,14 @@ function processEventQueue()
             % - side pokes result in transition to ITI state
             switch eventName
                 case 'centerPoke'
-                    if delayDuration > 0
+                    if p.delayDuration > 0
                         newTrialState = 'DELAY';
                     else
                         newTrialState = 'REWARD_WINDOW';
                     end
                     logInitiationPoke(eventName);
                     fprintf('\n\n***  Center Poke : Trial %i Initiated  ***\n', currTrialNum);
-                    if delayDuration > 0
+                    if p.delayDuration > 0
                         fprintf('- Delay Window Start -\n');
                     end
                 case {'leftPoke', 'rightPoke'}
