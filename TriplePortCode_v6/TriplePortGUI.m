@@ -22,7 +22,7 @@ function varargout = TriplePortGUI(varargin)
 
 % Edit the above text to modify the response to help TriplePortGUI
 
-% Last Modified by GUIDE v2.5 16-Dec-2021 10:06:12
+% Last Modified by GUIDE v2.5 21-Aug-2023 15:50:09
 
 % Begin initialization code - DO NOT EDIT
 %NOTE: THE ONLY REAL CHANGE IS IN THE LAST FUNCTION... THE BUTTON PUSHED
@@ -325,6 +325,8 @@ p.centerLaserStimEndTrig = get(handles.centerLaserStimEndTrig, 'Value');
 p.laserDelay = str2double(get(handles.laserDelay, 'String'));
 p.laserPulseDuration = str2double(get(handles.laserPulseDuration, 'String'));
 p.laserPulsePeriod = str2double(get(handles.laserPulsePeriod, 'String'));
+p.trialBasedBlocks = get(handles.trialBasedBlocks, 'Value');
+p.delayDuration = str2double(get(handles.delayPeriod, 'String'));
 
 %creates a global info struct to store the mouse's name and the folder's
 %path as inputted by the user. sets the running field to true and the
@@ -893,3 +895,35 @@ else
     set(handles.sideLaserStimProb, 'enable', 'on');
 end
 
+
+
+% --- Executes on button press in trialBasedBlocks.
+function trialBasedBlocks_Callback(hObject, eventdata, handles)
+% hObject    handle to trialBasedBlocks (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of trialBasedBlocks
+
+
+
+function delayPeriod_Callback(hObject, eventdata, handles)
+% hObject    handle to delayPeriod (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of delayPeriod as text
+%        str2double(get(hObject,'String')) returns contents of delayPeriod as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function delayPeriod_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to delayPeriod (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

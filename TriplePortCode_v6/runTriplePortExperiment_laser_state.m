@@ -3,9 +3,10 @@ function runTriplePortExperiment_laser_state(varargin)
     %% State-Machine version of the triple-port experiment
     % previous versions by Ofer Mazor, Shay Neufeld, and others
     % v6, Ofer Mazor, 2021-09-22
+    % v6.1, Ofer Mazor, 2023-03-08 
     % Updated by Kevin Mastro, 2023-07-10 to reflect the block size to be
     % based on Trials (currBlockinTrial) and not rewards (currBlockReward)
-    % v6.1, Ofer Mazor, 2023-03-08
+    % v6.2, Ofer Mazor, 2023-08-21, Add lick logging
 
     % print execution path
     fprintf ('Execution path: %s\n', mfilename('fullpath'));
@@ -29,10 +30,10 @@ function runTriplePortExperiment_laser_state(varargin)
 
 
     %% Hard-Coded parameters (should be migrated into GUI)
-    % Trial-based or Reward-based block counting?
-    p.trialBasedBlocks = true; 
-    % Delay Duration
-    p.delayDuration = 2.5; % in sec  (set to 0 for no DELAY state)
+    % % Trial-based or Reward-based block counting?
+    % p.trialBasedBlocks = true; 
+    % % Delay Duration
+    % p.delayDuration = 2.5; % in sec  (set to 0 for no DELAY state)
 
     %% Setup
 
